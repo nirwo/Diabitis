@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import subprocess
 import threading
@@ -16,13 +17,22 @@ VALID_RECIPE = {"name": "מוס טונה", "ingredients": ["טונה"], "steps":
                 "protein_per_portion": 20, "portion_text": "מנה"}
 
 
+def setUpModule():
+    logging.disable(logging.CRITICAL)  # keep expected-failure log lines out of the test output
+
+
+def tearDownModule():
+    logging.disable(logging.NOTSET)
+
+
 class FakeRunner:
     def __init__(self, output="", error=None, available=True):
         self.output, self.error, self.available = output, error, available
         self.work_dirs = []
         self.prompts = []
 
-    def run(self, prompt, work_dir):
+    def run(self, prompt, work_dir, read_files=False):
+        self.read_files = read_files
         self.prompts.append(prompt)
         self.work_dirs.append(work_dir)
         if self.error:
@@ -51,7 +61,8 @@ class BridgeServerTest(unittest.TestCase):
             with urllib.request.urlopen(req, timeout=5) as resp:
                 return resp.status, json.loads(resp.read())
         except urllib.error.HTTPError as err:
-            return err.code, json.loads(err.read())
+            with err:
+                return err.code, json.loads(err.read())
 
     def test_rejects_missing_token(self):
         status, body = self.call(self.start(FakeRunner()), "/health", token=None)
@@ -119,23 +130,60 @@ class BridgeServerTest(unittest.TestCase):
         self.assertIn("מזון רך", runner.prompts[0])
         self.assertIn("ביצים", runner.prompts[0])
 
+    def test_analyze_rejects_non_string_confidence(self):
+        for bad_value in ([], {}):
+            bad = {"items": [{"name": "ביצה", "grams": 50, "protein_g": 6, "confidence": bad_value}], "notes": ""}
+            status, body = self.call(self.start(FakeRunner(output=json.dumps(bad))), "/analyze", data=b"x")
+            self.assertEqual((status, body["error"]["code"]), (502, "BAD_MODEL_OUTPUT"))
+
+    def test_recipe_rejects_non_string_stage(self):
+        payload = json.dumps({"remaining_g": 30, "stage": [], "have": []}).encode()
+        status, body = self.call(self.start(FakeRunner()), "/recipe", data=payload, content_type="application/json")
+        self.assertEqual((status, body["error"]["code"]), (400, "BAD_REQUEST"))
+
+    def test_unexpected_error_returns_500_json(self):
+        status, body = self.call(self.start(FakeRunner(error=RuntimeError("boom"))), "/analyze", data=b"x")
+        self.assertEqual((status, body["error"]["code"]), (500, "INTERNAL"))
+
+    def test_analyze_gets_read_access_and_recipe_does_not(self):
+        analyze_runner = FakeRunner(output=json.dumps(VALID_ANALYSIS))
+        self.call(self.start(analyze_runner), "/analyze", data=b"x")
+        self.assertTrue(analyze_runner.read_files)
+        recipe_runner = FakeRunner(output=json.dumps(VALID_RECIPE))
+        payload = json.dumps({"remaining_g": 30, "stage": "soft", "have": []}).encode()
+        self.call(self.start(recipe_runner), "/recipe", data=payload, content_type="application/json")
+        self.assertFalse(recipe_runner.read_files)
+
     def test_unknown_path_is_404(self):
         status, _ = self.call(self.start(FakeRunner()), "/nope")
         self.assertEqual(status, 404)
 
 
 class ClaudeRunnerTest(unittest.TestCase):
-    def test_command_restricts_tools_and_settings(self):
+    def command_for(self, **kwargs):
         runner = server.ClaudeRunner("/usr/local/bin/claude")
         completed = subprocess.CompletedProcess([], 0, stdout=json.dumps({"result": "{}", "is_error": False}), stderr="")
         with mock.patch.object(subprocess, "run", return_value=completed) as run:
-            self.assertEqual(runner.run("prompt", "/tmp/x"), "{}")
-        command = run.call_args.args[0]
-        for flag in ["--tools", "--allowedTools", "--strict-mcp-config", "--setting-sources", "--add-dir"]:
+            self.assertEqual(runner.run("prompt", "/tmp/x", **kwargs), "{}")
+        self.assertEqual(run.call_args.kwargs["cwd"], "/tmp/x")
+        return run.call_args.args[0]
+
+    def test_read_command_is_scoped_to_work_dir(self):
+        command = self.command_for(read_files=True)
+        for flag in ["--strict-mcp-config", "--setting-sources"]:
             self.assertIn(flag, command)
         self.assertEqual(command[command.index("--tools") + 1], "Read")
+        self.assertEqual(command[command.index("--allowedTools") + 1], "Read(/tmp/x/**)")
+        self.assertEqual(command[command.index("--add-dir") + 1], "/tmp/x")
         self.assertNotIn("--bare", command)
-        self.assertEqual(run.call_args.kwargs["cwd"], "/tmp/x")
+
+    def test_default_command_has_no_tools(self):
+        command = self.command_for()
+        self.assertEqual(command[command.index("--tools") + 1], "")
+        self.assertNotIn("--allowedTools", command)
+        self.assertNotIn("--add-dir", command)
+        self.assertIn("--strict-mcp-config", command)
+        self.assertNotIn("--bare", command)
 
     def test_event_array_envelope_is_unwrapped(self):
         runner = server.ClaudeRunner("/usr/local/bin/claude")

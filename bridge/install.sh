@@ -10,6 +10,16 @@ readonly TOKEN_FILE="$CONFIG_DIR/token"
 readonly PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 readonly LOG_FILE="$HOME/Library/Logs/bariatric-bridge.log"
 
+TAILSCALE_BIN="$(command -v tailscale || true)"
+if [[ -z "$TAILSCALE_BIN" && -x /Applications/Tailscale.app/Contents/MacOS/Tailscale ]]; then
+  TAILSCALE_BIN=/Applications/Tailscale.app/Contents/MacOS/Tailscale
+fi
+TAILSCALE_IP=""
+if [[ -n "$TAILSCALE_BIN" ]]; then
+  TAILSCALE_IP="$("$TAILSCALE_BIN" ip -4 2>/dev/null | head -n 1 || true)"
+fi
+[[ -n "$TAILSCALE_IP" ]] || { echo "error: no Tailscale IPv4 address. Install Tailscale and sign in first." >&2; exit 1; }
+
 CLAUDE_BIN="$(command -v claude || true)"
 PYTHON_BIN="$(command -v python3 || true)"
 [[ -n "$CLAUDE_BIN" ]] || { echo "error: claude CLI not found in PATH" >&2; exit 1; }
@@ -20,6 +30,7 @@ chmod 700 "$CONFIG_DIR"
 if [[ ! -s "$TOKEN_FILE" ]]; then
   (umask 077 && "$PYTHON_BIN" -c 'import secrets; print(secrets.token_urlsafe(32))' > "$TOKEN_FILE")
 fi
+chmod 600 "$TOKEN_FILE"
 
 cat > "$PLIST" <<PLIST_EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -31,6 +42,7 @@ cat > "$PLIST" <<PLIST_EOF
   <array>
     <string>$PYTHON_BIN</string>
     <string>$BRIDGE_DIR/server.py</string>
+    <string>--host</string><string>$TAILSCALE_IP</string>
     <string>--port</string><string>$PORT</string>
     <string>--token-file</string><string>$TOKEN_FILE</string>
     <string>--claude</string><string>$CLAUDE_BIN</string>
@@ -49,19 +61,19 @@ cat > "$PLIST" <<PLIST_EOF
 PLIST_EOF
 
 launchctl bootout "gui/$(id -u)" "$PLIST" 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" "$PLIST"
+for attempt in 1 2 3 4 5; do
+  if launchctl bootstrap "gui/$(id -u)" "$PLIST" 2>/dev/null; then
+    break
+  fi
+  [[ "$attempt" -lt 5 ]] || { echo "error: launchctl bootstrap failed" >&2; exit 1; }
+  sleep 1
+done
 
-TAILSCALE_BIN="$(command -v tailscale || true)"
-[[ -z "$TAILSCALE_BIN" && -x /Applications/Tailscale.app/Contents/MacOS/Tailscale ]] \
-  && TAILSCALE_BIN=/Applications/Tailscale.app/Contents/MacOS/Tailscale
-HOST=""
-if [[ -n "$TAILSCALE_BIN" ]]; then
-  HOST="$("$TAILSCALE_BIN" status --json 2>/dev/null \
-    | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["Self"]["DNSName"].rstrip("."))' 2>/dev/null || true)"
-fi
-[[ -n "$HOST" ]] || HOST="$(ipconfig getifaddr en0 || echo '<mac-ip>')"
+HOST="$("$TAILSCALE_BIN" status --json 2>/dev/null \
+  | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["Self"]["DNSName"].rstrip("."))' 2>/dev/null || true)"
+[[ -n "$HOST" ]] || HOST="$TAILSCALE_IP"
 
-pbcopy < "$TOKEN_FILE"
-echo "Bridge running (log: $LOG_FILE)"
+tr -d '\n' < "$TOKEN_FILE" | pbcopy
+echo "Bridge running (log: $LOG_FILE), listening only on the Tailscale address $TAILSCALE_IP"
 echo "Address for the app: http://$HOST:$PORT"
 echo "Token copied to the clipboard — paste it on the iPhone (Universal Clipboard)."

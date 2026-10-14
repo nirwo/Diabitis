@@ -71,16 +71,18 @@ class ClaudeRunner:
     def is_available(self):
         return bool(self.claude_path) and os.access(self.claude_path, os.X_OK)
 
-    def run(self, prompt, work_dir):
+    def run(self, prompt, work_dir, read_files=False):
+        """Run claude; with read_files=True it may Read only inside work_dir, else it has no tools."""
         command = [
             self.claude_path, "-p", prompt,
             "--output-format", "json",
-            "--tools", "Read",
-            "--allowedTools", "Read",
             "--strict-mcp-config",
             "--setting-sources", "project",
-            "--add-dir", work_dir,
         ]
+        if read_files:
+            command += ["--tools", "Read", "--allowedTools", f"Read({work_dir}/**)", "--add-dir", work_dir]
+        else:
+            command += ["--tools", ""]
         try:
             with self._lock:
                 completed = subprocess.run(command, cwd=work_dir, capture_output=True,
@@ -149,7 +151,7 @@ def validate_analysis(obj):
         if not isinstance(raw, dict):
             raise ModelOutputError("item is not an object")
         confidence = raw.get("confidence", "medium")
-        if confidence not in CONFIDENCE_VALUES:
+        if not isinstance(confidence, str) or confidence not in CONFIDENCE_VALUES:
             raise ModelOutputError("bad confidence")
         grams = _number(raw.get("grams"), MAX_GRAMS, "grams")
         protein = _number(raw.get("protein_g"), MAX_PROTEIN_G, "protein_g")
@@ -181,7 +183,7 @@ def validate_recipe_request(obj):
             or not 0 <= remaining <= MAX_REMAINING_G:
         raise ValueError("remaining_g must be a number between 0 and 300")
     stage = obj.get("stage")
-    if stage not in STAGE_NAMES_HE:
+    if not isinstance(stage, str) or stage not in STAGE_NAMES_HE:
         raise ValueError("unknown stage")
     have = obj.get("have", [])
     if not isinstance(have, list) or len(have) > MAX_ITEMS \
@@ -201,6 +203,7 @@ def make_handler(token, runner):
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "BariatricBridge/1.0"
+        timeout = 30  # socket read timeout, so a stalled client cannot hold a thread forever
 
         def log_message(self, fmt, *args):
             LOG.info("%s %s", self.address_string(), fmt % args)
@@ -263,6 +266,9 @@ def make_handler(token, runner):
             except ClaudeUnavailableError as err:
                 LOG.error("claude failed on %s: %s", self.path, err)
                 self._error(503, "CLAUDE_UNAVAILABLE", "claude is not available on the Mac")
+            except Exception as err:  # last resort: never drop the connection without an answer
+                LOG.error("unexpected %s on %s", type(err).__name__, self.path)
+                self._error(500, "INTERNAL", "internal error")
 
         def _analyze(self):
             body = self._read_body(MAX_IMAGE_BYTES)
@@ -272,7 +278,7 @@ def make_handler(token, runner):
                 image_path = os.path.join(work_dir, "meal.jpg")
                 with open(image_path, "wb") as image_file:
                     image_file.write(body)
-                text = runner.run(ANALYZE_PROMPT.format(path=image_path), work_dir)
+                text = runner.run(ANALYZE_PROMPT.format(path=image_path), work_dir, read_files=True)
             self._send(200, validate_analysis(extract_json(text)))
 
         def _recipe(self):
@@ -301,7 +307,7 @@ def load_token(path):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Bridge between the BariatricHabits app and claude on this Mac")
-    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--token-file", required=True)
     parser.add_argument("--claude", default=shutil.which("claude") or "")

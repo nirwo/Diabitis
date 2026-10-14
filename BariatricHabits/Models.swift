@@ -1,0 +1,138 @@
+import Foundation
+
+struct MealSlot: Codable, Identifiable, Hashable {
+    var id = UUID()
+    var name: String
+    var hour: Int
+    var minute: Int
+    var isMain: Bool
+
+    var minutesOfDay: Int { hour * 60 + minute }
+    var timeText: String { String(format: "%02d:%02d", hour, minute) }
+
+    func date(on day: Date) -> Date {
+        Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
+    }
+}
+
+struct Vitamin: Codable, Identifiable, Hashable {
+    var id = UUID()
+    var name: String
+    var dose: String
+    var hour: Int
+    var minute: Int
+    var note: String
+
+    var minutesOfDay: Int { hour * 60 + minute }
+    var timeText: String { String(format: "%02d:%02d", hour, minute) }
+}
+
+struct MealRecord: Codable, Identifiable, Hashable {
+    var id = UUID()
+    var slotID: UUID?
+    var slotName: String
+    var start: Date
+    var end: Date
+    var targetMinutes: Int
+    var bites: Int
+
+    var duration: TimeInterval { end.timeIntervalSince(start) }
+}
+
+struct WalkRecord: Codable, Identifiable, Hashable {
+    var id = UUID()
+    var date: Date
+    var minutes: Int
+    var steps: Int?
+}
+
+struct WalkPlan: Codable, Hashable {
+    /// Calendar weekdays: 1 = Sunday ... 7 = Saturday
+    var weekdays: Set<Int> = [1, 3, 5]
+    var hour: Int = 18
+    var minute: Int = 0
+    var durationMinutes: Int = 60
+
+    var timeText: String { String(format: "%02d:%02d", hour, minute) }
+}
+
+struct AppSettings: Codable, Hashable {
+    var surgeryDate: Date?
+    var mainMealMinutes = 15
+    var snackMealMinutes = 10
+    var chewSeconds = 30
+    var drinkGapMinutes = 30
+    var waterGoalML = 1500
+    var stepGoal = 6000
+    var hydrationReminders = true
+}
+
+struct DayLog: Codable, Hashable {
+    var meals: [MealRecord] = []
+    var completedSlots: Set<UUID> = []
+    var vitaminsTaken: Set<UUID> = []
+    var waterML = 0
+    var habits: Set<String> = []
+}
+
+struct AppState: Codable {
+    var settings = AppSettings()
+    var mealSlots: [MealSlot] = AppState.defaultMealSlots
+    var vitamins: [Vitamin] = AppState.defaultVitamins
+    var walkPlan = WalkPlan()
+    var days: [String: DayLog] = [:]
+    var walks: [WalkRecord] = []
+    var lastMealEnd: Date?
+    var lastWaterAt: Date?
+
+    static let defaultMealSlots: [MealSlot] = [
+        MealSlot(name: "ארוחת בוקר", hour: 8, minute: 0, isMain: true),
+        MealSlot(name: "ארוחת ביניים", hour: 10, minute: 30, isMain: false),
+        MealSlot(name: "ארוחת צהריים", hour: 13, minute: 0, isMain: true),
+        MealSlot(name: "ארוחת ביניים", hour: 16, minute: 0, isMain: false),
+        MealSlot(name: "ארוחת ערב", hour: 19, minute: 0, isMain: true),
+    ]
+
+    static let defaultVitamins: [Vitamin] = [
+        Vitamin(name: "מולטי-ויטמין", dose: "", hour: 9, minute: 0, note: "לפי המלצת הדיאטנית"),
+        Vitamin(name: "סידן ציטרט", dose: "", hour: 14, minute: 0, note: "להפריד מהברזל בשעתיים לפחות"),
+        Vitamin(name: "ברזל", dose: "", hour: 20, minute: 0, note: "להפריד מהסידן בשעתיים לפחות"),
+        Vitamin(name: "ויטמין B12", dose: "", hour: 9, minute: 0, note: ""),
+        Vitamin(name: "ויטמין D", dose: "", hour: 9, minute: 0, note: ""),
+    ]
+
+    /// Fields that affect recurring notifications.
+    var notificationSignature: [AnyHashable] {
+        [mealSlots, vitamins, walkPlan, settings.drinkGapMinutes,
+         settings.hydrationReminders, settings.mainMealMinutes]
+    }
+}
+
+struct Habit: Identifiable {
+    let id: String
+    let title: String
+    let icon: String
+
+    static let noSoda = "noSoda"
+
+    static let all: [Habit] = [
+        Habit(id: noSoda, title: "בלי משקאות מוגזים", icon: "bubbles.and.sparkles"),
+        Habit(id: "separate", title: "הפרדתי בין שתייה לאכילה", icon: "drop.triangle"),
+        Habit(id: "slow", title: "אכלתי לאט, בלי למהר", icon: "tortoise"),
+        Habit(id: "chew", title: "לעסתי כל ביס היטב", icon: "mouth"),
+        Habit(id: "protein", title: "התחלתי כל ארוחה בחלבון", icon: "fork.knife"),
+        Habit(id: "noStraw", title: "שתיתי בלגימות קטנות, בלי קש", icon: "cup.and.saucer"),
+    ]
+}
+
+let hebrewWeekdays = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"]
+let hebrewWeekdayLetters = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"]
+
+extension Date {
+    var timeText: String { formatted(date: .omitted, time: .shortened) }
+}
+
+func formatDuration(_ interval: TimeInterval) -> String {
+    let total = max(0, Int(interval.rounded()))
+    return String(format: "%d:%02d", total / 60, total % 60)
+}

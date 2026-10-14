@@ -22,13 +22,37 @@ struct FoodItem: Codable, Identifiable, Hashable {
         copy.proteinG = min(max(proteinG, 0), Self.maxProteinG)
         return copy
     }
+}
 
-    /// Eating half the portion means half the protein: keeps protein per gram.
-    func withGrams(_ newGrams: Double) -> FoodItem {
-        var copy = self
-        if grams > 0 { copy.proteinG = proteinG * newGrams / grams }
-        copy.grams = newGrams
-        return copy
+/// Amount editing for one food row. Eating half the portion means half the protein, so it
+/// keeps protein per gram — remembered separately so that typing through 0 g ("100" → "00" → "50")
+/// doesn't lose it.
+struct FoodAmountEdit {
+    private(set) var grams: Double
+    private(set) var proteinG: Double
+    private var proteinPerGram: Double?
+
+    init(item: FoodItem) {
+        grams = item.grams
+        proteinG = item.proteinG
+        proteinPerGram = item.grams > 0 ? item.proteinG / item.grams : nil
+    }
+
+    /// Returns false (and changes nothing) when the text is not a number.
+    @discardableResult
+    mutating func setGrams(_ text: String) -> Bool {
+        guard let newGrams = parseDecimal(text) else { return false }
+        grams = newGrams
+        if let proteinPerGram { proteinG = proteinPerGram * newGrams }
+        return true
+    }
+
+    @discardableResult
+    mutating func setProtein(_ text: String) -> Bool {
+        guard let newProtein = parseDecimal(text) else { return false }
+        proteinG = newProtein
+        if grams > 0 { proteinPerGram = newProtein / grams }
+        return true
     }
 }
 

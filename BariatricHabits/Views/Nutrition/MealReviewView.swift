@@ -96,12 +96,19 @@ struct MealReviewView: View {
 /// Text-backed number fields: `TextField(value:format:)` only commits on return or focus loss,
 /// and the decimal pad has no return key, so typed amounts never reached the meal.
 struct FoodItemEditor: View {
-    /// Below this difference a re-typed value is just the displayed rounding of the stored one.
-    private static let roundingTolerance = 0.05
-
     @Binding var item: FoodItem
-    @State private var gramsText = ""
-    @State private var proteinText = ""
+    @State private var amounts: FoodAmountEdit
+    @State private var gramsText: String
+    @State private var proteinText: String
+    /// Set when the protein field is rewritten from a grams change, so that echo isn't taken as a user edit.
+    @State private var isSyncingProtein = false
+
+    init(item: Binding<FoodItem>) {
+        _item = item
+        _amounts = State(initialValue: FoodAmountEdit(item: item.wrappedValue))
+        _gramsText = State(initialValue: formatGrams(item.wrappedValue.grams))
+        _proteinText = State(initialValue: formatGrams(item.wrappedValue.proteinG))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -127,10 +134,6 @@ struct FoodItemEditor: View {
             }
             .font(.subheadline)
         }
-        .onAppear {
-            gramsText = formatGrams(item.grams)
-            proteinText = formatGrams(item.proteinG)
-        }
         // Typing should replace the old amount, not append to it.
         .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { note in
             guard let field = note.object as? UITextField, field.keyboardType == .decimalPad else { return }
@@ -139,14 +142,23 @@ struct FoodItemEditor: View {
     }
 
     private func applyGrams(_ text: String) {
-        guard let grams = parseDecimal(text), abs(grams - item.grams) >= Self.roundingTolerance else { return }
-        item = item.withGrams(grams)
-        proteinText = formatGrams(item.proteinG)
+        guard amounts.setGrams(text) else { return }
+        item.grams = amounts.grams
+        item.proteinG = amounts.proteinG
+        let shown = formatGrams(amounts.proteinG)
+        if shown != proteinText {
+            isSyncingProtein = true
+            proteinText = shown
+        }
     }
 
     private func applyProtein(_ text: String) {
-        guard let protein = parseDecimal(text), abs(protein - item.proteinG) >= Self.roundingTolerance else { return }
-        item.proteinG = protein
+        if isSyncingProtein {
+            isSyncingProtein = false
+            return
+        }
+        guard amounts.setProtein(text) else { return }
+        item.proteinG = amounts.proteinG
     }
 }
 

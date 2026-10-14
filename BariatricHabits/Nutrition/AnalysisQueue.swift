@@ -11,6 +11,8 @@ final class AnalysisQueue: ObservableObject {
     private let makeClient: @MainActor () -> BridgeClienting?
     /// Owned by the queue, not by a view, so leaving a screen never cancels a running analysis.
     private var runTask: Task<Void, Never>?
+    /// Set by a kick during a run: a meal re-queued mid-run was already skipped this round.
+    private var isRerunRequested = false
 
     init(store: AppStore, photos: PhotoStore, makeClient: @escaping @MainActor () -> BridgeClienting?) {
         self.store = store
@@ -19,13 +21,21 @@ final class AnalysisQueue: ObservableObject {
         store.resetStaleAnalyses()
     }
 
-    /// Starts processing in a task the queue owns; a no-op while a run is in progress.
-    /// Returns the running task so callers such as pull-to-refresh can await it.
+    /// Starts processing in a task the queue owns. While a run is in progress it asks that run
+    /// to go once more when it finishes. Returns the running task so callers can await it.
     @discardableResult
     func kick() -> Task<Void, Never> {
-        if let runTask { return runTask }
+        if let runTask {
+            isRerunRequested = true
+            return runTask
+        }
         let task = Task { [weak self] in
-            await self?.processPending()
+            var shouldRun = true
+            while shouldRun {
+                self?.isRerunRequested = false
+                await self?.processPending()
+                shouldRun = self?.isRerunRequested ?? false
+            }
             self?.runTask = nil
         }
         runTask = task

@@ -207,6 +207,31 @@ final class AnalysisQueueTests: XCTestCase {
         XCTAssertEqual(client.analyzeCalls, 1)
     }
 
+    func test_kick_during_run_reanalyzes_entry_set_back_to_pending() async throws {
+        let first = try addPending(cookingNote: "מבושל")
+        try addPending()
+        client.analyzeResults = [.success(egg), .success(egg), .success(egg)]
+        let store = store!
+        let queue = queue!
+        var calls = 0
+        client.onAnalyze = {
+            calls += 1
+            guard calls == 2 else { return }
+            // The user re-analyzes the first meal (already done in this run) with a new note.
+            store.updateFoodEntry(id: first.id) {
+                $0.cookingNote = "מטוגן בשמן"
+                $0.status = .pending
+            }
+            queue.kick()
+        }
+        await queue.kick().value
+        XCTAssertEqual(client.analyzeCalls, 3)
+        XCTAssertEqual(client.cookingNotes.last, "מטוגן בשמן")
+        let saved = try XCTUnwrap(store.allFoodEntries.first { $0.id == first.id })
+        XCTAssertEqual(saved.status, .needsReview)
+        XCTAssertEqual(saved.analyzedCookingNote, "מטוגן בשמן")
+    }
+
     func test_kick_is_noop_while_running() async throws {
         try addPending()
         client.analyzeResults = [.success(egg), .success(egg)]

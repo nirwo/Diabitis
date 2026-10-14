@@ -26,12 +26,30 @@ struct CookingNoteDraft: Equatable {
     }
 
     /// Trimmed, at most 200 characters; nil when nothing was chosen or typed.
+    /// Typed parts that equal a choice count as that choice, so it never appears twice.
     var note: String? {
-        let typed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        let parts = Self.options.filter(selected.contains) + (typed.isEmpty ? [] : [typed])
+        var chips = selected
+        var typedParts: [String] = []
+        for part in text.components(separatedBy: Self.separator) {
+            let trimmed = part.trimmingCharacters(in: .whitespacesAndNewlines)
+            if Self.options.contains(trimmed) {
+                chips.insert(trimmed)
+            } else if !trimmed.isEmpty {
+                typedParts.append(trimmed)
+            }
+        }
+        let parts = Self.options.filter(chips.contains) + typedParts
         let joined = String(parts.joined(separator: Self.separator).prefix(Self.maxLength))
             .trimmingCharacters(in: .whitespacesAndNewlines)
         return joined.isEmpty ? nil : joined
+    }
+
+    /// A stored note in the same canonical form `note` produces.
+    static func normalized(_ note: String?) -> String? { CookingNoteDraft(note: note).note }
+
+    /// True when the draft means something other than `previous`, ignoring order and duplicates.
+    static func isChanged(_ draft: CookingNoteDraft, from previous: String?) -> Bool {
+        draft.note != normalized(previous)
     }
 }
 

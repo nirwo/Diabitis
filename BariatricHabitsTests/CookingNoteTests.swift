@@ -44,6 +44,28 @@ final class CookingNoteTests: XCTestCase {
         XCTAssertEqual(draft.text, "מטוגן בשמן קנולה")
     }
 
+    func test_reordered_note_has_no_spurious_difference() {
+        let analyzed = "בכף שמן, מטוגן בשמן"
+        let draft = CookingNoteDraft(note: analyzed)
+        XCTAssertEqual(draft.note, "מטוגן בשמן, בכף שמן")
+        XCTAssertEqual(CookingNoteDraft.normalized(analyzed), draft.note)
+        XCTAssertFalse(CookingNoteDraft.isChanged(draft, from: analyzed))
+    }
+
+    func test_typed_chip_label_is_not_duplicated() {
+        var draft = CookingNoteDraft(note: nil)
+        draft.toggle("מבושל")
+        draft.text = "מבושל, בכף שמן"
+        XCTAssertEqual(draft.note, "מבושל, בכף שמן")
+    }
+
+    func test_edited_note_is_a_change() {
+        var draft = CookingNoteDraft(note: "מבושל")
+        draft.toggle("מאודה")
+        XCTAssertTrue(CookingNoteDraft.isChanged(draft, from: "מבושל"))
+        XCTAssertFalse(CookingNoteDraft.isChanged(CookingNoteDraft(note: nil), from: nil))
+    }
+
     func test_options_are_the_approved_copy() {
         XCTAssertEqual(CookingNoteDraft.options,
                        ["מבושל", "אפוי בתנור", "מטוגן בשמן", "צלוי/גריל", "מאודה", "טרי/לא מבושל"])

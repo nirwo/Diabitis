@@ -16,9 +16,14 @@ struct MealReviewView: View {
         _cookingDraft = State(initialValue: CookingNoteDraft(note: entry.cookingNote))
     }
 
+    /// The saved meal as it is now; the queue may have moved on since this screen copied it.
+    private var liveEntry: FoodEntry { store.allFoodEntries.first { $0.id == entry.id } ?? entry }
+
     /// The stored estimate was made with a different note than the one now chosen.
     private var canReanalyze: Bool {
-        entry.photoFileName != nil && entry.status != .analyzing && cookingDraft.note != entry.analyzedCookingNote
+        let live = liveEntry
+        return live.photoFileName != nil && live.status != .analyzing
+            && CookingNoteDraft.isChanged(cookingDraft, from: live.analyzedCookingNote)
     }
 
     private var canSave: Bool {
@@ -48,12 +53,18 @@ struct MealReviewView: View {
                 } footer: {
                     Text("סה\"כ חלבון: \(formatGrams(entry.proteinG)) גר'")
                 }
-                Section("איך הכנתי") {
+                Section {
                     CookingNoteEditor(draft: $cookingDraft)
                     if canReanalyze {
                         Button { reanalyze() } label: {
                             Label("זהה מחדש עם אופן ההכנה", systemImage: "arrow.clockwise")
                         }
+                    }
+                } header: {
+                    Text("איך הכנתי")
+                } footer: {
+                    if canReanalyze && liveEntry.status == .confirmed {
+                        Text("הארוחה תחזור לאישור ולא תיספר ביעד עד שתאשרו שוב.")
                     }
                 }
                 if let notes = entry.notes, !notes.isEmpty {

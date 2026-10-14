@@ -16,6 +16,7 @@
 		4C5CEBA0B5AB48FF31234E92 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46CF7D82D576A149675A5412 /* TodayView.swift */; };
 		55533B519379F7745AC1E829 /* MealTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5647EC217428010511277B05 /* MealTimer.swift */; };
 		812EC6E636EEF4A44D02688E /* HealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64291B18A22335E501A7EBC2 /* HealthManager.swift */; };
+		81653CE60A17E7D55ACF0AA6 /* nutrition-library.json in Resources */ = {isa = PBXBuildFile; fileRef = B79722FB1C344EC85D258086 /* nutrition-library.json */; };
 		818CE9BA590B200C9388DB67 /* FoodModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4E5943BA4482D8C5B86016 /* FoodModels.swift */; };
 		991BEA32ADC8F45DB5E9DE6D /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12FE9E8D4C551B389261D7AD /* Models.swift */; };
 		A750C744F2E63961FF62E490 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD5D40E333F57389C70128A /* ActivityView.swift */; };
@@ -24,6 +25,8 @@
 		D94F31F2578CB8FB476FA59E /* BariatricHabitsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */; };
 		E1080EE7EDB49BE9F04B5C06 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D125F3BBADAB406303A7672 /* AppStore.swift */; };
 		EA66ACF15F27354FF05017B6 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3487505D9A6A737EC6FD868 /* NotificationManager.swift */; };
+		F997035FABEA7FD3E6B31809 /* FoodLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7263433EA888D434835033 /* FoodLibraryTests.swift */; };
+		FA82F006104C69D527256CC0 /* FoodLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A96F90C4A907B1EC4C60B0 /* FoodLibrary.swift */; };
 		FAF6CEF95BB821FCCCE7538A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AF39BA0DC45C424D131B8F /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
@@ -40,9 +43,11 @@
 /* Begin PBXFileReference section */
 		12FE9E8D4C551B389261D7AD /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		191B406267237C31F5289397 /* DietStageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DietStageTests.swift; sourceTree = "<group>"; };
+		19A96F90C4A907B1EC4C60B0 /* FoodLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLibrary.swift; sourceTree = "<group>"; };
 		1D125F3BBADAB406303A7672 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
 		2BD35A8C334998034C082248 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C4E5943BA4482D8C5B86016 /* FoodModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodModels.swift; sourceTree = "<group>"; };
+		3B7263433EA888D434835033 /* FoodLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLibraryTests.swift; sourceTree = "<group>"; };
 		46CF7D82D576A149675A5412 /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		5647EC217428010511277B05 /* MealTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealTimer.swift; sourceTree = "<group>"; };
 		56AF39BA0DC45C424D131B8F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -54,6 +59,7 @@
 		9AD5D40E333F57389C70128A /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		A0FDFD8514DE437305A851D7 /* MealTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealTimerView.swift; sourceTree = "<group>"; };
 		A6A60C58769932B71E3F8EB5 /* GuidelinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidelinesView.swift; sourceTree = "<group>"; };
+		B79722FB1C344EC85D258086 /* nutrition-library.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "nutrition-library.json"; sourceTree = "<group>"; };
 		BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BariatricHabitsApp.swift; sourceTree = "<group>"; };
 		BF39C5F297C84F0F767452EE /* BariatricHabits.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BariatricHabits.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3487505D9A6A737EC6FD868 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
@@ -65,6 +71,7 @@
 			isa = PBXGroup;
 			children = (
 				5B0793BDD64FB828A3E23A18 /* DietStage.swift */,
+				19A96F90C4A907B1EC4C60B0 /* FoodLibrary.swift */,
 				2C4E5943BA4482D8C5B86016 /* FoodModels.swift */,
 			);
 			path = Nutrition;
@@ -88,6 +95,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		AD51D4A3C318434216F27E45 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B79722FB1C344EC85D258086 /* nutrition-library.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		AEFF20F881D4A05CA0A81D23 /* BariatricHabits */ = {
 			isa = PBXGroup;
 			children = (
@@ -99,6 +114,7 @@
 				12FE9E8D4C551B389261D7AD /* Models.swift */,
 				E3487505D9A6A737EC6FD868 /* NotificationManager.swift */,
 				0E70784FA0DBF678688DB858 /* Nutrition */,
+				AD51D4A3C318434216F27E45 /* Resources */,
 				CD55165F822AA854C59D63D1 /* Views */,
 			);
 			path = BariatricHabits;
@@ -122,6 +138,7 @@
 			isa = PBXGroup;
 			children = (
 				191B406267237C31F5289397 /* DietStageTests.swift */,
+				3B7263433EA888D434835033 /* FoodLibraryTests.swift */,
 				5B6E4CCBF8A640F265C6A1D4 /* StateDecodingTests.swift */,
 			);
 			path = BariatricHabitsTests;
@@ -206,6 +223,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B53BCB8F4F00E666B6C54614 /* Assets.xcassets in Resources */,
+				81653CE60A17E7D55ACF0AA6 /* nutrition-library.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -217,6 +235,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA8F8247B4658D231E204CCC /* DietStageTests.swift in Sources */,
+				F997035FABEA7FD3E6B31809 /* FoodLibraryTests.swift in Sources */,
 				42EB3154E52D697287FBACFD /* StateDecodingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -230,6 +249,7 @@
 				D94F31F2578CB8FB476FA59E /* BariatricHabitsApp.swift in Sources */,
 				2352255640D280A2AB2BA5C3 /* ContentView.swift in Sources */,
 				128700B4B1852384A1D219FD /* DietStage.swift in Sources */,
+				FA82F006104C69D527256CC0 /* FoodLibrary.swift in Sources */,
 				818CE9BA590B200C9388DB67 /* FoodModels.swift in Sources */,
 				0D43C071F118927CE0C96C26 /* GuidelinesView.swift in Sources */,
 				812EC6E636EEF4A44D02688E /* HealthManager.swift in Sources */,

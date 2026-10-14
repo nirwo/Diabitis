@@ -65,6 +65,9 @@ struct AppSettings: Codable, Hashable {
     var waterGoalML = 1500
     var stepGoal = 6000
     var hydrationReminders = true
+    var proteinGoalGrams = 100
+    var dietStageOverride: DietStage?
+    var bridgeURL: String?
 }
 
 struct DayLog: Codable, Hashable {
@@ -73,6 +76,7 @@ struct DayLog: Codable, Hashable {
     var vitaminsTaken: Set<UUID> = []
     var waterML = 0
     var habits: Set<String> = []
+    var foodEntries: [FoodEntry] = []
 }
 
 struct AppState: Codable {
@@ -135,4 +139,53 @@ extension Date {
 func formatDuration(_ interval: TimeInterval) -> String {
     let total = max(0, Int(interval.rounded()))
     return String(format: "%d:%02d", total / 60, total % 60)
+}
+
+// MARK: - Lossless decoding
+// Every field falls back to its default so that adding a field never makes
+// AppStore discard the user's saved data.
+
+extension AppSettings {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = AppSettings()
+        surgeryDate = try c.decodeIfPresent(Date.self, forKey: .surgeryDate)
+        mainMealMinutes = try c.decodeIfPresent(Int.self, forKey: .mainMealMinutes) ?? d.mainMealMinutes
+        snackMealMinutes = try c.decodeIfPresent(Int.self, forKey: .snackMealMinutes) ?? d.snackMealMinutes
+        chewSeconds = try c.decodeIfPresent(Int.self, forKey: .chewSeconds) ?? d.chewSeconds
+        drinkGapMinutes = try c.decodeIfPresent(Int.self, forKey: .drinkGapMinutes) ?? d.drinkGapMinutes
+        waterGoalML = try c.decodeIfPresent(Int.self, forKey: .waterGoalML) ?? d.waterGoalML
+        stepGoal = try c.decodeIfPresent(Int.self, forKey: .stepGoal) ?? d.stepGoal
+        hydrationReminders = try c.decodeIfPresent(Bool.self, forKey: .hydrationReminders) ?? d.hydrationReminders
+        proteinGoalGrams = try c.decodeIfPresent(Int.self, forKey: .proteinGoalGrams) ?? d.proteinGoalGrams
+        dietStageOverride = try c.decodeIfPresent(DietStage.self, forKey: .dietStageOverride)
+        bridgeURL = try c.decodeIfPresent(String.self, forKey: .bridgeURL)
+    }
+}
+
+extension DayLog {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        meals = try c.decodeIfPresent([MealRecord].self, forKey: .meals) ?? []
+        completedSlots = try c.decodeIfPresent(Set<UUID>.self, forKey: .completedSlots) ?? []
+        vitaminsTaken = try c.decodeIfPresent(Set<UUID>.self, forKey: .vitaminsTaken) ?? []
+        waterML = try c.decodeIfPresent(Int.self, forKey: .waterML) ?? 0
+        habits = try c.decodeIfPresent(Set<String>.self, forKey: .habits) ?? []
+        foodEntries = try c.decodeIfPresent([FoodEntry].self, forKey: .foodEntries) ?? []
+    }
+}
+
+extension AppState {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = AppState()
+        settings = try c.decodeIfPresent(AppSettings.self, forKey: .settings) ?? d.settings
+        mealSlots = try c.decodeIfPresent([MealSlot].self, forKey: .mealSlots) ?? d.mealSlots
+        vitamins = try c.decodeIfPresent([Vitamin].self, forKey: .vitamins) ?? d.vitamins
+        walkPlan = try c.decodeIfPresent(WalkPlan.self, forKey: .walkPlan) ?? d.walkPlan
+        days = try c.decodeIfPresent([String: DayLog].self, forKey: .days) ?? [:]
+        walks = try c.decodeIfPresent([WalkRecord].self, forKey: .walks) ?? []
+        lastMealEnd = try c.decodeIfPresent(Date.self, forKey: .lastMealEnd)
+        lastWaterAt = try c.decodeIfPresent(Date.self, forKey: .lastWaterAt)
+    }
 }

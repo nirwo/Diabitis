@@ -22,15 +22,28 @@ final class AppStore: ObservableObject {
     private let fileURL: URL
     private var rescheduleTask: Task<Void, Never>?
 
-    init() {
+    nonisolated static func defaultFileURL() -> URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        fileURL = dir.appendingPathComponent("state.json")
-        if let data = try? Data(contentsOf: fileURL),
-           let decoded = try? JSONDecoder().decode(AppState.self, from: data) {
-            state = decoded
-        } else {
-            state = AppState()
+        return dir.appendingPathComponent("state.json")
+    }
+
+    init(fileURL: URL = AppStore.defaultFileURL()) {
+        self.fileURL = fileURL
+        state = Self.loadState(from: fileURL)
+    }
+
+    /// Never silently drops saved data: an undecodable file is copied aside before defaults are used.
+    private static func loadState(from url: URL) -> AppState {
+        guard let data = try? Data(contentsOf: url) else { return AppState() }
+        do {
+            return try JSONDecoder().decode(AppState.self, from: data)
+        } catch {
+            let stamp = Int(Date().timeIntervalSince1970)
+            let backup = url.deletingLastPathComponent().appendingPathComponent("state.unreadable-\(stamp).json")
+            try? FileManager.default.copyItem(at: url, to: backup)
+            print("AppStore: saved state unreadable, backed up to \(backup.lastPathComponent): \(error)")
+            return AppState()
         }
     }
 

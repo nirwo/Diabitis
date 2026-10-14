@@ -22,6 +22,21 @@ struct FoodItem: Codable, Identifiable, Hashable {
         copy.proteinG = min(max(proteinG, 0), Self.maxProteinG)
         return copy
     }
+
+    /// Eating half the portion means half the protein: keeps protein per gram.
+    func withGrams(_ newGrams: Double) -> FoodItem {
+        var copy = self
+        if grams > 0 { copy.proteinG = proteinG * newGrams / grams }
+        copy.grams = newGrams
+        return copy
+    }
+}
+
+/// Parses a non-negative number typed with either "." or "," as the decimal separator.
+func parseDecimal(_ text: String) -> Double? {
+    let normalized = text.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: ".")
+    guard let value = Double(normalized), value >= 0, value.isFinite else { return nil }
+    return value
 }
 
 enum AnalysisFailure: String, Codable, Hashable {

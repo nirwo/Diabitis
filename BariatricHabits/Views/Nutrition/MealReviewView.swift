@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 struct MealReviewView: View {
@@ -53,6 +54,14 @@ struct MealReviewView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("שמירה") { save() }.disabled(!canSave)
                 }
+                // The decimal pad has no return key.
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("סיום") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
+                                                        to: nil, from: nil, for: nil)
+                    }
+                }
             }
             .sheet(isPresented: $showingLibraryPicker) {
                 LibraryPickerView { source in
@@ -84,8 +93,15 @@ struct MealReviewView: View {
     }
 }
 
+/// Text-backed number fields: `TextField(value:format:)` only commits on return or focus loss,
+/// and the decimal pad has no return key, so typed amounts never reached the meal.
 struct FoodItemEditor: View {
+    /// Below this difference a re-typed value is just the displayed rounding of the stored one.
+    private static let roundingTolerance = 0.05
+
     @Binding var item: FoodItem
+    @State private var gramsText = ""
+    @State private var proteinText = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -97,16 +113,40 @@ struct FoodItemEditor: View {
             }
             HStack {
                 Text("גרם")
-                TextField("גרם", value: $item.grams, format: .number.precision(.fractionLength(0...1)))
-                    .keyboardType(.decimalPad).frame(width: 70)
+                TextField("גרם", text: $gramsText)
+                    .keyboardType(.decimalPad)
+                    .frame(minWidth: 60)
+                    .onChange(of: gramsText) { _, text in applyGrams(text) }
                 Spacer()
                 Text("חלבון")
-                TextField("חלבון", value: $item.proteinG, format: .number.precision(.fractionLength(0...1)))
-                    .keyboardType(.decimalPad).frame(width: 60)
+                TextField("חלבון", text: $proteinText)
+                    .keyboardType(.decimalPad)
+                    .frame(minWidth: 50)
+                    .onChange(of: proteinText) { _, text in applyProtein(text) }
                 Text("גר'")
             }
             .font(.subheadline)
         }
+        .onAppear {
+            gramsText = formatGrams(item.grams)
+            proteinText = formatGrams(item.proteinG)
+        }
+        // Typing should replace the old amount, not append to it.
+        .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { note in
+            guard let field = note.object as? UITextField, field.keyboardType == .decimalPad else { return }
+            DispatchQueue.main.async { field.selectAll(nil) }
+        }
+    }
+
+    private func applyGrams(_ text: String) {
+        guard let grams = parseDecimal(text), abs(grams - item.grams) >= Self.roundingTolerance else { return }
+        item = item.withGrams(grams)
+        proteinText = formatGrams(item.proteinG)
+    }
+
+    private func applyProtein(_ text: String) {
+        guard let protein = parseDecimal(text), abs(protein - item.proteinG) >= Self.roundingTolerance else { return }
+        item.proteinG = protein
     }
 }
 

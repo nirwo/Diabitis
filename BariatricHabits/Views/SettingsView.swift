@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var health: HealthManager
+    @Environment(\.dismiss) private var dismiss
     @State private var editingSlot: MealSlot?
 
     private var hasSurgeryDate: Binding<Bool> {
@@ -28,6 +29,19 @@ struct SettingsView: View {
                         DatePicker("תאריך", selection: surgeryDate, displayedComponents: .date)
                     }
                 }
+
+                Section("תזונה") {
+                    Stepper("יעד חלבון: \(store.state.settings.proteinGoalGrams) גר'",
+                            value: $store.state.settings.proteinGoalGrams, in: 60...160, step: 5)
+                    Picker("שלב תזונה", selection: $store.state.settings.dietStageOverride) {
+                        Text("אוטומטי לפי תאריך הניתוח").tag(DietStage?.none)
+                        ForEach(DietStage.allCases) { stage in
+                            Text(stage.title).tag(DietStage?.some(stage))
+                        }
+                    }
+                }
+
+                BridgeSettingsSection()
 
                 Section {
                     ForEach(store.sortedSlots) { slot in
@@ -95,6 +109,9 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("הגדרות")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("סיום") { dismiss() } }
+            }
             .sheet(item: $editingSlot) { slot in
                 MealSlotEditor(slot: slot) { saved in
                     if let index = store.state.mealSlots.firstIndex(where: { $0.id == saved.id }) {

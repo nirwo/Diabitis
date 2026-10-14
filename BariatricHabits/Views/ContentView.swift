@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var health: HealthManager
+    @EnvironmentObject private var analysisQueue: AnalysisQueue
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("didOnboard") private var didOnboard = false
     @State private var tab = 0
@@ -15,15 +16,15 @@ struct ContentView: View {
             MealTimerView()
                 .tabItem { Label("ארוחה", systemImage: "timer") }
                 .tag(1)
+            NutritionView()
+                .tabItem { Label("תזונה", systemImage: "fork.knife.circle.fill") }
+                .tag(4)
             VitaminsView()
                 .tabItem { Label("ויטמינים", systemImage: "pills.fill") }
                 .tag(2)
             ActivityView()
                 .tabItem { Label("פעילות", systemImage: "figure.walk") }
                 .tag(3)
-            SettingsView()
-                .tabItem { Label("הגדרות", systemImage: "gearshape.fill") }
-                .tag(4)
         }
         .sheet(isPresented: Binding(get: { !didOnboard }, set: { if !$0 { didOnboard = true } })) {
             OnboardingView { didOnboard = true }
@@ -36,7 +37,10 @@ struct ContentView: View {
             await NotificationManager.rescheduleRecurring(state: store.state)
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Task { await health.refresh() } }
+            if phase == .active {
+                Task { await health.refresh() }
+                Task { await analysisQueue.processPending() }
+            }
         }
     }
 }

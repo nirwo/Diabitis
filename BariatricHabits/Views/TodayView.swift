@@ -4,9 +4,11 @@ struct TodayView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var health: HealthManager
     @EnvironmentObject private var mealTimer: MealTimer
+    @EnvironmentObject private var analysisQueue: AnalysisQueue
     @Binding var selectedTab: Int
 
     @State private var pendingWater: Int?
+    @State private var showingSettings = false
 
     var body: some View {
         NavigationStack {
@@ -23,6 +25,7 @@ struct TodayView: View {
                     }
                     drinkSection(now: context.date)
                     mealsSection
+                    proteinSection
                     vitaminsSection
                     habitsSection
                     activitySection
@@ -30,11 +33,21 @@ struct TodayView: View {
             }
             .navigationTitle("היום")
             .toolbar {
-                NavigationLink {
-                    GuidelinesView()
-                } label: {
-                    Image(systemName: "book")
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showingSettings = true } label: { Image(systemName: "gearshape") }
+                        .accessibilityLabel("הגדרות")
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink { GuidelinesView() } label: { Image(systemName: "book") }
+                        .accessibilityLabel("הנחיות")
+                }
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
+                    .environmentObject(store)
+                    .environmentObject(health)
+                    .environmentObject(analysisQueue)
+                    .environment(\.layoutDirection, .rightToLeft)
             }
             .alert("זה זמן ההפרדה מהארוחה",
                    isPresented: Binding(get: { pendingWater != nil }, set: { if !$0 { pendingWater = nil } })) {
@@ -46,6 +59,35 @@ struct TodayView: View {
             } message: {
                 Text("מומלץ לא לשתות \(store.state.settings.drinkGapMinutes) דקות לפני ואחרי ארוחה.")
             }
+        }
+    }
+
+    // MARK: - Protein
+
+    private var proteinSection: some View {
+        let goal = store.state.settings.proteinGoalGrams
+        let eaten = Set(store.today.foodEntries.flatMap { $0.items.map(\.name) })
+        let suggestions = ProteinCalculator.suggestions(remaining: Double(goal) - store.proteinToday,
+                                                        stage: store.dietStage(),
+                                                        library: .bundled, eatenNames: eaten)
+        return Section {
+            Button { selectedTab = 4 } label: {
+                ProteinProgressView(total: store.proteinToday, goal: goal)
+            }
+            .buttonStyle(.plain)
+            ForEach(suggestions) { source in
+                HStack {
+                    Text(source.nameHe)
+                    Spacer()
+                    Text("\(source.servingText) · \(formatGrams(source.proteinPerServing)) גר'")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } header: {
+            Text("חלבון")
+        } footer: {
+            if !suggestions.isEmpty { Text("רעיונות להשלמה, מתאימים לשלב שלך.") }
         }
     }
 

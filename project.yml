@@ -9,6 +9,15 @@ targets:
     type: application
     platform: iOS
     sources: [BariatricHabits]
+    info:
+      path: BariatricHabits/Info.plist
+      properties:
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+          NSExceptionDomains:
+            ts.net:
+              NSIncludesSubdomains: true
+              NSExceptionAllowsInsecureHTTPLoads: true
     entitlements:
       path: BariatricHabits.entitlements
       properties:
@@ -27,6 +36,8 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: "הרגלים"
         INFOPLIST_KEY_NSHealthShareUsageDescription: "האפליקציה קוראת את מספר הצעדים כדי להציג את ההתקדמות היומית וההליכות שלך."
         INFOPLIST_KEY_NSHealthUpdateUsageDescription: "האפליקציה אינה כותבת נתונים לאפליקציית בריאות."
+        INFOPLIST_KEY_NSCameraUsageDescription: "האפליקציה מצלמת את הצלחת כדי לזהות מה אכלת ולחשב חלבון."
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "האפליקציה מתחברת למק שלך כדי לזהות את תמונות הארוחות."
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait

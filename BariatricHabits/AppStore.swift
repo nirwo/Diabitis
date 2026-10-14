@@ -21,6 +21,9 @@ final class AppStore: ObservableObject {
 
     private let fileURL: URL
     private var rescheduleTask: Task<Void, Never>?
+    /// True when the saved file exists but could not be safely loaded or backed up.
+    /// Saving would then overwrite the user's only copy, so it is refused.
+    private(set) var isSaveBlocked = false
 
     nonisolated static func defaultFileURL() -> URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -28,26 +31,60 @@ final class AppStore: ObservableObject {
         return dir.appendingPathComponent("state.json")
     }
 
-    init(fileURL: URL = AppStore.defaultFileURL()) {
-        self.fileURL = fileURL
-        state = Self.loadState(from: fileURL)
+    /// Collision-free: millisecond timestamp plus a UUID.
+    nonisolated static func defaultBackupURL(for url: URL) -> URL {
+        let stamp = Int(Date().timeIntervalSince1970 * 1000)
+        return url.deletingLastPathComponent()
+            .appendingPathComponent("state.unreadable-\(stamp)-\(UUID().uuidString).json")
     }
 
-    /// Never silently drops saved data: an undecodable file is copied aside before defaults are used.
-    private static func loadState(from url: URL) -> AppState {
-        guard let data = try? Data(contentsOf: url) else { return AppState() }
+    init(fileURL: URL = AppStore.defaultFileURL(),
+         backupURL: (URL) -> URL = AppStore.defaultBackupURL(for:)) {
+        self.fileURL = fileURL
+        let loaded = Self.loadState(from: fileURL, backupURL: backupURL)
+        state = loaded.state
+        isSaveBlocked = !loaded.canSave
+    }
+
+    /// Never silently drops saved data. Defaults are used without a backup only when the file
+    /// does not exist. Any other read or decode failure copies the file aside first; if the copy
+    /// fails, or the file exists but cannot be read, saving is blocked for this launch.
+    private static func loadState(from url: URL, backupURL: (URL) -> URL) -> (state: AppState, canSave: Bool) {
+        let data: Data
         do {
-            return try JSONDecoder().decode(AppState.self, from: data)
+            data = try Data(contentsOf: url)
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile {
+            return (AppState(), true)
         } catch {
-            let stamp = Int(Date().timeIntervalSince1970)
-            let backup = url.deletingLastPathComponent().appendingPathComponent("state.unreadable-\(stamp).json")
-            try? FileManager.default.copyItem(at: url, to: backup)
-            print("AppStore: saved state unreadable, backed up to \(backup.lastPathComponent): \(error)")
-            return AppState()
+            let backedUp = backUp(url, to: backupURL(url), reason: error)
+            print("AppStore: saved state exists but could not be read (backup: \(backedUp)); saving disabled: \(error)")
+            return (AppState(), false)
+        }
+        do {
+            return (try JSONDecoder().decode(AppState.self, from: data), true)
+        } catch {
+            let backedUp = backUp(url, to: backupURL(url), reason: error)
+            if !backedUp { print("AppStore: backup failed; saving disabled so the original is kept") }
+            return (AppState(), backedUp)
+        }
+    }
+
+    private static func backUp(_ url: URL, to backup: URL, reason: Error) -> Bool {
+        do {
+            try FileManager.default.copyItem(at: url, to: backup)
+            print("AppStore: saved state unreadable, backed up to \(backup.lastPathComponent): \(reason)")
+            return true
+        } catch {
+            print("AppStore: could not back up unreadable state to \(backup.lastPathComponent): \(error)")
+            return false
         }
     }
 
     private func save() {
+        guard !isSaveBlocked else {
+            print("AppStore: save refused — the original state file could not be loaded or backed up")
+            return
+        }
         guard let data = try? JSONEncoder().encode(state) else { return }
         try? data.write(to: fileURL, options: .atomic)
     }

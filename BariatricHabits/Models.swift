@@ -142,8 +142,10 @@ func formatDuration(_ interval: TimeInterval) -> String {
 }
 
 // MARK: - Lossless decoding
-// Every field falls back to its default so that adding a field never makes
-// AppStore discard the user's saved data.
+// Every field falls back to its default when its key is missing, so adding a field
+// never makes AppStore discard the user's saved data. A key that is present but holds a
+// malformed value still fails the whole decode; AppStore then backs the file up before
+// using defaults (and refuses to save if the backup fails).
 
 extension AppSettings {
     init(from decoder: Decoder) throws {

@@ -23,6 +23,7 @@ struct TodayView: View {
                             .padding(.vertical, 4)
                         }
                     }
+                    attentionBanner
                     drinkSection(now: context.date)
                     mealsSection
                     proteinSection
@@ -58,6 +59,27 @@ struct TodayView: View {
                 Button("ביטול", role: .cancel) { pendingWater = nil }
             } message: {
                 Text("מומלץ לא לשתות \(store.state.settings.drinkGapMinutes) דקות לפני ואחרי ארוחה.")
+            }
+        }
+    }
+
+    // MARK: - Meals needing review
+
+    @ViewBuilder
+    private var attentionBanner: some View {
+        let count = store.entriesNeedingAttention.count
+        if count > 0 {
+            Section {
+                Button { selectedTab = 4 } label: {
+                    HStack {
+                        Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.orange)
+                        Text(count == 1 ? "יש ארוחה לאישור" : "יש \(count) ארוחות לאישור").font(.headline)
+                        Spacer()
+                        Image(systemName: "chevron.forward").foregroundStyle(.secondary).accessibilityHidden(true)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("פותח את מסך התזונה")
             }
         }
     }

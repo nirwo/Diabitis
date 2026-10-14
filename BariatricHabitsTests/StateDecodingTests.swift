@@ -43,17 +43,87 @@ final class StateDecodingTests: XCTestCase {
         XCTAssertEqual(decoded.days["2027-01-15"]?.foodEntries, log.foodEntries)
     }
 
-    func test_unreadable_state_file_is_backed_up_not_overwritten() throws {
+    private func makeTempDir() throws -> URL {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let file = dir.appendingPathComponent("state.json")
-        try Data("not json".utf8).write(to: file)
+        addTeardownBlock { try? FileManager.default.removeItem(at: dir) }
+        return dir
+    }
 
-        _ = AppStore(fileURL: file)
+    func test_unreadable_state_file_is_backed_up_byte_for_byte() throws {
+        let dir = try makeTempDir()
+        let file = dir.appendingPathComponent("state.json")
+        let original = Data("not json".utf8)
+        try original.write(to: file)
+
+        let store = AppStore(fileURL: file)
 
         let backups = try FileManager.default.contentsOfDirectory(atPath: dir.path)
             .filter { $0.hasPrefix("state.unreadable-") }
         XCTAssertEqual(backups.count, 1)
+        XCTAssertEqual(try Data(contentsOf: dir.appendingPathComponent(backups[0])), original)
+        XCTAssertFalse(store.isSaveBlocked, "a successful backup allows saving")
+    }
+
+    func test_backup_names_do_not_collide() {
+        let file = URL(fileURLWithPath: "/tmp/state.json")
+        XCTAssertNotEqual(AppStore.defaultBackupURL(for: file), AppStore.defaultBackupURL(for: file))
+    }
+
+    func test_failed_backup_blocks_saving_and_keeps_original() throws {
+        let dir = try makeTempDir()
+        let file = dir.appendingPathComponent("state.json")
+        let original = Data("not json".utf8)
+        try original.write(to: file)
+        // A directory already at the backup path makes the copy fail deterministically.
+        let blockedBackup = dir.appendingPathComponent("state.unreadable-fixed.json")
+        try FileManager.default.createDirectory(at: blockedBackup, withIntermediateDirectories: true)
+
+        let store = AppStore(fileURL: file, backupURL: { _ in blockedBackup })
+        XCTAssertTrue(store.isSaveBlocked)
+        store.addWater(250)
+
+        XCTAssertEqual(try Data(contentsOf: file), original, "the original must never be overwritten")
+    }
+
+    func test_unchanged_launch_performs_no_write() throws {
+        let dir = try makeTempDir()
+        let file = dir.appendingPathComponent("state.json")
+        var state = AppState()
+        var log = DayLog()
+        log.foodEntries = [FoodEntry(date: Date(), photoFileName: "a.jpg", status: .needsReview),
+                           FoodEntry(date: Date(), photoFileName: "b.jpg", status: .pending)]
+        state.days[AppStore.key(for: Date())] = log
+        let original = try JSONEncoder().encode(state)
+        try original.write(to: file)
+        let past = Date(timeIntervalSince1970: 1_600_000_000)
+        try FileManager.default.setAttributes([.modificationDate: past], ofItemAtPath: file.path)
+
+        let store = AppStore(fileURL: file)
+        let queue = AnalysisQueue(store: store, photos: PhotoStore(directory: dir.appendingPathComponent("photos")),
+                                  makeClient: { nil })
+        _ = queue
+
+        let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
+        XCTAssertEqual(attributes[.modificationDate] as? Date, past)
+        XCTAssertEqual(try Data(contentsOf: file), original)
+    }
+
+    func test_stale_analysis_is_reset_and_saved() throws {
+        let dir = try makeTempDir()
+        let file = dir.appendingPathComponent("state.json")
+        var state = AppState()
+        var log = DayLog()
+        let entry = FoodEntry(date: Date(), photoFileName: "a.jpg", status: .analyzing)
+        log.foodEntries = [entry]
+        state.days[AppStore.key(for: Date())] = log
+        try JSONEncoder().encode(state).write(to: file)
+
+        let store = AppStore(fileURL: file)
+        store.resetStaleAnalyses()
+
+        let saved = try JSONDecoder().decode(AppState.self, from: Data(contentsOf: file))
+        XCTAssertEqual(saved.days[AppStore.key(for: Date())]?.foodEntries.first?.status, .pending)
     }
 
     func test_food_entry_protein_and_goal_counting() {

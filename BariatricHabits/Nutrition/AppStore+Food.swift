@@ -70,15 +70,51 @@ extension AppStore {
     }
 
     /// An app kill during analysis leaves entries in `.analyzing`; put them back in the queue.
+    /// Assigns `state` only when something changed, so a normal launch never writes the file.
     func resetStaleAnalyses() {
+        replaceStatuses { $0 == .analyzing ? .pending : nil }
+    }
+
+    /// After the token is fixed, meals that failed with a wrong token go back to the queue.
+    /// One assignment to `state`. Returns how many were requeued.
+    @discardableResult
+    func requeueUnauthorized() -> Int {
+        replaceStatuses { $0 == .failed(.unauthorized) ? .pending : nil }
+    }
+
+    /// Confirmable or failed meals from any day: the user must see these even after midnight.
+    var entriesNeedingAttention: [FoodEntry] {
+        allFoodEntries.filter { entry in
+            if case .failed = entry.status { return true }
+            return entry.status == .needsReview
+        }
+    }
+
+    /// Meals from earlier days still waiting for (or in) analysis.
+    func queuedEntriesFromEarlierDays(now: Date = Date()) -> [FoodEntry] {
+        let todayKey = Self.key(for: now)
+        return allFoodEntries.filter {
+            ($0.status == .pending || $0.status == .analyzing) && Self.key(for: $0.date) != todayKey
+        }
+    }
+
+    /// Applies `transform` to every entry status (nil = keep). Single state mutation, none if nothing changed.
+    @discardableResult
+    private func replaceStatuses(_ transform: (FoodEntryStatus) -> FoodEntryStatus?) -> Int {
         var days = state.days
+        var changed = 0
         for (key, log) in days {
             var updated = log
-            for index in updated.foodEntries.indices where updated.foodEntries[index].status == .analyzing {
-                updated.foodEntries[index].status = .pending
+            var dayChanged = false
+            for index in updated.foodEntries.indices {
+                guard let newStatus = transform(updated.foodEntries[index].status) else { continue }
+                updated.foodEntries[index].status = newStatus
+                dayChanged = true
+                changed += 1
             }
-            days[key] = updated
+            if dayChanged { days[key] = updated }
         }
-        state.days = days
+        if changed > 0 { state.days = days }
+        return changed
     }
 }

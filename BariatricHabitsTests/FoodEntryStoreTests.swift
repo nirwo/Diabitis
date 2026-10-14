@@ -55,6 +55,53 @@ final class FoodEntryStoreTests: XCTestCase {
         XCTAssertEqual(store.today.foodEntries[0].status, .pending)
     }
 
+    func test_resetStaleAnalyses_without_stale_entries_does_not_publish() {
+        let store = makeTestStore()
+        store.upsertFoodEntry(FoodEntry(date: Date(), photoFileName: "p.jpg", status: .needsReview))
+        var publishes = 0
+        let cancellable = store.objectWillChange.sink { publishes += 1 }
+        store.resetStaleAnalyses()
+        cancellable.cancel()
+        XCTAssertEqual(publishes, 0)
+    }
+
+    func test_requeueUnauthorized_moves_only_unauthorized_to_pending_in_one_change() {
+        let store = makeTestStore()
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        let a = FoodEntry(date: Date(), photoFileName: "a.jpg", status: .failed(.unauthorized))
+        let b = FoodEntry(date: yesterday, photoFileName: "b.jpg", status: .failed(.unauthorized))
+        let c = FoodEntry(date: Date(), photoFileName: "c.jpg", status: .failed(.unreadable))
+        let d = FoodEntry(date: Date(), photoFileName: "d.jpg", status: .confirmed)
+        [a, b, c, d].forEach(store.upsertFoodEntry)
+        var publishes = 0
+        let cancellable = store.objectWillChange.sink { publishes += 1 }
+
+        XCTAssertEqual(store.requeueUnauthorized(), 2)
+        cancellable.cancel()
+
+        XCTAssertEqual(publishes, 1, "single state mutation")
+        let statuses = Dictionary(uniqueKeysWithValues: store.allFoodEntries.map { ($0.id, $0.status) })
+        XCTAssertEqual(statuses[a.id], .pending)
+        XCTAssertEqual(statuses[b.id], .pending)
+        XCTAssertEqual(statuses[c.id], .failed(.unreadable))
+        XCTAssertEqual(statuses[d.id], .confirmed)
+        XCTAssertEqual(store.requeueUnauthorized(), 0)
+    }
+
+    func test_entries_needing_attention_include_any_day() {
+        let store = makeTestStore()
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        let review = FoodEntry(date: yesterday, photoFileName: "a.jpg", status: .needsReview)
+        let failed = FoodEntry(date: yesterday, photoFileName: "b.jpg", status: .failed(.missingPhoto))
+        let oldPending = FoodEntry(date: yesterday, photoFileName: "c.jpg", status: .pending)
+        let todayPending = FoodEntry(date: Date(), photoFileName: "d.jpg", status: .pending)
+        let confirmed = FoodEntry(date: yesterday, status: .confirmed)
+        [review, failed, oldPending, todayPending, confirmed].forEach(store.upsertFoodEntry)
+
+        XCTAssertEqual(Set(store.entriesNeedingAttention.map(\.id)), [review.id, failed.id])
+        XCTAssertEqual(store.queuedEntriesFromEarlierDays().map(\.id), [oldPending.id])
+    }
+
     func test_dietStage_override_wins() {
         let store = makeTestStore()
         store.state.settings.surgeryDate = Calendar.current.date(byAdding: .day, value: -3, to: Date())

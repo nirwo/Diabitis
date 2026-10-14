@@ -13,6 +13,8 @@ struct NutritionView: View {
 
     private var todaysEntries: [FoodEntry] { store.today.foodEntries.sorted { $0.date > $1.date } }
     private var waitingCount: Int { store.foodEntries(withStatus: .pending).count }
+    /// Needs review or failed (any day), then earlier days' meals still waiting for analysis.
+    private var attentionEntries: [FoodEntry] { store.entriesNeedingAttention + store.queuedEntriesFromEarlierDays() }
 
     var body: some View {
         NavigationStack {
@@ -21,6 +23,7 @@ struct NutritionView: View {
                     ProteinProgressView(total: store.proteinToday, goal: store.state.settings.proteinGoalGrams)
                 }
                 if waitingCount > 0 || analysisQueue.isRunning { queueSection }
+                if !attentionEntries.isEmpty { attentionSection }
                 Section("ארוחות היום") {
                     if todaysEntries.isEmpty {
                         Text("עוד לא תועדו ארוחות היום").foregroundStyle(.secondary)
@@ -44,8 +47,8 @@ struct NutritionView: View {
             }
             .navigationTitle("תזונה")
             .toolbar { ToolbarItem(placement: .primaryAction) { addMenu } }
-            .refreshable { await analysisQueue.processPending() }
-            .task { await analysisQueue.processPending() }
+            .refreshable { await analysisQueue.kick().value }
+            .task { analysisQueue.kick() }
             .sheet(isPresented: $showingCamera) {
                 CameraPicker { image in handleCaptured(image) }.ignoresSafeArea()
             }
@@ -87,7 +90,7 @@ struct NutritionView: View {
                 Text(analysisQueue.isRunning ? "מזהה ארוחות במק…" : (waitingCount == 1 ? "ארוחה אחת ממתינה לזיהוי" : "\(waitingCount) ארוחות ממתינות לזיהוי"))
                 Spacer()
                 if !analysisQueue.isRunning {
-                    Button("נסה עכשיו") { Task { await analysisQueue.processPending() } }
+                    Button("נסה עכשיו") { analysisQueue.kick() }
                 }
             }
             if let error = analysisQueue.lastError, !analysisQueue.isRunning {
@@ -96,12 +99,31 @@ struct NutritionView: View {
         }
     }
 
+    private var attentionSection: some View {
+        Section {
+            ForEach(attentionEntries) { entry in
+                Button { reviewing = entry } label: { FoodEntryRow(entry: entry, photos: photos, showsDay: true) }
+                    .buttonStyle(.plain)
+            }
+            .onDelete { offsets in
+                let ids = offsets.map { attentionEntries[$0].id }
+                for id in ids {
+                    if let photo = store.deleteFoodEntry(id: id) { photos.delete(photo) }
+                }
+            }
+        } header: {
+            Text("לאישור")
+        } footer: {
+            Text("ארוחות שמחכות לאישור, שהזיהוי שלהן נכשל, או שעדיין ממתינות מימים קודמים.")
+        }
+    }
+
     private func handleCaptured(_ image: UIImage) {
         do {
             let fileName = try photos.save(image)
             store.upsertFoodEntry(FoodEntry(date: Date(), slotName: store.suggestedSlot()?.name,
                                             photoFileName: fileName, status: .pending))
-            Task { await analysisQueue.processPending() }
+            analysisQueue.kick()
         } catch {
             errorMessage = "לא הצלחנו לשמור את התמונה."
         }
@@ -124,6 +146,13 @@ struct NutritionView: View {
 struct FoodEntryRow: View {
     let entry: FoodEntry
     let photos: PhotoStore
+    var showsDay = false
+
+    private var title: String {
+        let base = entry.slotName ?? entry.date.timeText
+        guard showsDay, !Calendar.current.isDateInToday(entry.date) else { return base }
+        return "\(entry.date.formatted(.dateTime.day().month(.abbreviated))) · \(base)"
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -139,7 +168,7 @@ struct FoodEntryRow: View {
             .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(entry.slotName ?? entry.date.timeText).font(.headline)
+                Text(title).font(.headline)
                 Text(entry.items.isEmpty ? entry.date.timeText : entry.items.map(\.name).joined(separator: ", "))
                     .font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
             }

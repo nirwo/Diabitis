@@ -18,16 +18,31 @@ extension AppStore {
             .sorted { $0.date < $1.date }
     }
 
-    /// Inserts under the day the meal was eaten, or replaces the entry with the same id.
+    /// Inserts under the day the meal was eaten, or replaces the entry with the same id
+    /// (moving it if its date now falls on another day). One assignment to `state`.
     func upsertFoodEntry(_ entry: FoodEntry) {
         var entry = entry
         entry.items = entry.items.map(\.sanitized)
-        let replacement = entry
-        if updateFoodEntry(id: entry.id, { $0 = replacement }) { return }
-        let key = Self.key(for: entry.date)
-        var log = state.days[key] ?? DayLog()
-        log.foodEntries.append(entry)
-        state.days[key] = log
+        let newKey = Self.key(for: entry.date)
+        var days = state.days
+        var replacedInPlace = false
+        for (key, log) in days {
+            guard let index = log.foodEntries.firstIndex(where: { $0.id == entry.id }) else { continue }
+            var updated = log
+            if key == newKey {
+                updated.foodEntries[index] = entry
+                replacedInPlace = true
+            } else {
+                updated.foodEntries.remove(at: index)
+            }
+            days[key] = updated
+        }
+        if !replacedInPlace {
+            var log = days[newKey] ?? DayLog()
+            log.foodEntries.append(entry)
+            days[newKey] = log
+        }
+        state.days = days
     }
 
     @discardableResult
@@ -56,8 +71,14 @@ extension AppStore {
 
     /// An app kill during analysis leaves entries in `.analyzing`; put them back in the queue.
     func resetStaleAnalyses() {
-        for entry in foodEntries(withStatus: .analyzing) {
-            updateFoodEntry(id: entry.id) { $0.status = .pending }
+        var days = state.days
+        for (key, log) in days {
+            var updated = log
+            for index in updated.foodEntries.indices where updated.foodEntries[index].status == .analyzing {
+                updated.foodEntries[index].status = .pending
+            }
+            days[key] = updated
         }
+        state.days = days
     }
 }

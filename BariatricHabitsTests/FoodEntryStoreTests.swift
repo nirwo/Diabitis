@@ -62,4 +62,16 @@ final class FoodEntryStoreTests: XCTestCase {
         store.state.settings.dietStageOverride = .soft
         XCTAssertEqual(store.dietStage(), .soft)
     }
+
+    func test_upsert_moves_entry_when_date_changes_day() {
+        let store = makeTestStore()
+        var entry = FoodEntry(date: Date(), status: .manual)
+        store.upsertFoodEntry(entry)
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        entry.date = yesterday
+        store.upsertFoodEntry(entry)
+        XCTAssertTrue(store.today.foodEntries.isEmpty)
+        XCTAssertEqual(store.log(for: yesterday).foodEntries.map(\.id), [entry.id])
+        XCTAssertEqual(store.allFoodEntries.count, 1)
+    }
 }

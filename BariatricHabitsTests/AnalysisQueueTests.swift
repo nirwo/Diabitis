@@ -5,9 +5,11 @@ import XCTest
 final class FakeBridgeClient: BridgeClienting {
     var analyzeResults: [Result<AnalysisResult, BridgeError>] = []
     private(set) var analyzeCalls = 0
+    var onAnalyze: (@MainActor () -> Void)?
 
     func analyze(jpeg: Data) async throws -> AnalysisResult {
         analyzeCalls += 1
+        await onAnalyze?()
         try await Task.sleep(nanoseconds: 10_000_000)
         guard !analyzeResults.isEmpty else { throw BridgeError.unreachable }
         return try analyzeResults.removeFirst().get()
@@ -108,5 +110,60 @@ final class AnalysisQueueTests: XCTestCase {
         let unconfigured = AnalysisQueue(store: store, photos: photos, makeClient: { nil })
         await unconfigured.processPending()
         XCTAssertEqual(status(entry), .pending)
+    }
+
+    func test_user_edit_during_analysis_is_not_overwritten() async throws {
+        let entry = try addPending()
+        client.analyzeResults = [.success(egg)]
+        let store = store!
+        client.onAnalyze = {
+            var edited = entry
+            edited.status = .manual
+            edited.items = [FoodItem(name: "קוטג'", grams: 100, proteinG: 11)]
+            store.upsertFoodEntry(edited)
+        }
+        await queue.processPending()
+        let saved = try XCTUnwrap(store.allFoodEntries.first { $0.id == entry.id })
+        XCTAssertEqual(saved.status, .manual)
+        XCTAssertEqual(saved.items.map(\.name), ["קוטג'"])
+    }
+
+    func test_user_edit_during_failed_analysis_is_not_reset_to_pending() async throws {
+        let entry = try addPending()
+        client.analyzeResults = [.failure(.unreachable)]
+        let store = store!
+        client.onAnalyze = {
+            var edited = entry
+            edited.status = .manual
+            store.upsertFoodEntry(edited)
+        }
+        await queue.processPending()
+        XCTAssertEqual(status(entry), .manual)
+    }
+
+    func test_bridge_items_are_sanitized() async throws {
+        let entry = try addPending()
+        client.analyzeResults = [.success(AnalysisResult(
+            items: [AnalyzedItem(name: " x ", grams: -5, proteinG: 999, confidence: .low)], notes: ""))]
+        await queue.processPending()
+        let item = try XCTUnwrap(store.allFoodEntries.first { $0.id == entry.id }?.items.first)
+        XCTAssertEqual(item.grams, 0)
+        XCTAssertEqual(item.proteinG, FoodItem.maxProteinG)
+    }
+
+    func test_entry_added_mid_run_is_analyzed() async throws {
+        let first = try addPending()
+        client.analyzeResults = [.success(egg), .success(egg)]
+        var added: FoodEntry?
+        let store = store!
+        client.onAnalyze = { [unowned client] in
+            client!.onAnalyze = nil
+            let late = FoodEntry(date: Date(), photoFileName: "missing.jpg", status: .pending)
+            added = late
+            store.upsertFoodEntry(late)
+        }
+        await queue.processPending()
+        XCTAssertEqual(status(first), .needsReview)
+        XCTAssertEqual(status(try XCTUnwrap(added)), .failed(.missingPhoto))
     }
 }

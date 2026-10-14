@@ -22,7 +22,10 @@ final class AnalysisQueue: ObservableObject {
         isRunning = true
         defer { isRunning = false }
 
-        for entry in store.foodEntries(withStatus: .pending) {
+        var attempted = Set<UUID>()
+        // Re-read each round so meals added mid-run are picked up and edited ones skipped.
+        while let entry = store.foodEntries(withStatus: .pending).first(where: { !attempted.contains($0.id) }) {
+            attempted.insert(entry.id)
             guard let fileName = entry.photoFileName, let jpeg = photos.data(for: fileName) else {
                 store.updateFoodEntry(id: entry.id) { $0.status = .failed(.missingPhoto) }
                 continue
@@ -31,25 +34,37 @@ final class AnalysisQueue: ObservableObject {
             do {
                 let result = try await client.analyze(jpeg: jpeg)
                 store.updateFoodEntry(id: entry.id) {
+                    guard $0.status == .analyzing else { return }
                     $0.items = result.items.map {
-                        FoodItem(name: $0.name, grams: $0.grams, proteinG: $0.proteinG, confidence: $0.confidence)
+                        FoodItem(name: $0.name, grams: $0.grams, proteinG: $0.proteinG, confidence: $0.confidence).sanitized
                     }
                     $0.notes = result.notes.isEmpty ? nil : result.notes
                     $0.status = .needsReview
                 }
                 lastError = nil
+            } catch is CancellationError {
+                markIfStillAnalyzing(entry.id, as: .pending)
+                return
             } catch BridgeError.badModelOutput {
-                store.updateFoodEntry(id: entry.id) { $0.status = .failed(.unreadable) }
+                markIfStillAnalyzing(entry.id, as: .failed(.unreadable))
             } catch BridgeError.unauthorized {
-                store.updateFoodEntry(id: entry.id) { $0.status = .failed(.unauthorized) }
+                markIfStillAnalyzing(entry.id, as: .failed(.unauthorized))
                 lastError = .unauthorized
                 return
             } catch {
                 // Mac asleep, offline, Claude logged out, timeout: retry later, stop hammering now.
-                store.updateFoodEntry(id: entry.id) { $0.status = .pending }
+                markIfStillAnalyzing(entry.id, as: .pending)
                 lastError = (error as? BridgeError) ?? .unreachable
                 return
             }
+        }
+    }
+
+    /// A late result must never overwrite a meal the user confirmed or edited meanwhile.
+    private func markIfStillAnalyzing(_ id: UUID, as status: FoodEntryStatus) {
+        store.updateFoodEntry(id: id) {
+            guard $0.status == .analyzing else { return }
+            $0.status = status
         }
     }
 }

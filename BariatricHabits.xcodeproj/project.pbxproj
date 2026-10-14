@@ -15,6 +15,7 @@
 		42EB3154E52D697287FBACFD /* StateDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6E4CCBF8A640F265C6A1D4 /* StateDecodingTests.swift */; };
 		4C5CEBA0B5AB48FF31234E92 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46CF7D82D576A149675A5412 /* TodayView.swift */; };
 		55533B519379F7745AC1E829 /* MealTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5647EC217428010511277B05 /* MealTimer.swift */; };
+		7C831D968BFBBA8D800EF4A2 /* ProteinCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3824D6FF0B9BCF07D6811729 /* ProteinCalculator.swift */; };
 		812EC6E636EEF4A44D02688E /* HealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64291B18A22335E501A7EBC2 /* HealthManager.swift */; };
 		81653CE60A17E7D55ACF0AA6 /* nutrition-library.json in Resources */ = {isa = PBXBuildFile; fileRef = B79722FB1C344EC85D258086 /* nutrition-library.json */; };
 		818CE9BA590B200C9388DB67 /* FoodModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4E5943BA4482D8C5B86016 /* FoodModels.swift */; };
@@ -25,6 +26,7 @@
 		D94F31F2578CB8FB476FA59E /* BariatricHabitsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */; };
 		E1080EE7EDB49BE9F04B5C06 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D125F3BBADAB406303A7672 /* AppStore.swift */; };
 		EA66ACF15F27354FF05017B6 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3487505D9A6A737EC6FD868 /* NotificationManager.swift */; };
+		F8AF33412D0499CB40D60973 /* ProteinCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7507C9242C9A3AE1ED4EA391 /* ProteinCalculatorTests.swift */; };
 		F997035FABEA7FD3E6B31809 /* FoodLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7263433EA888D434835033 /* FoodLibraryTests.swift */; };
 		FA82F006104C69D527256CC0 /* FoodLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A96F90C4A907B1EC4C60B0 /* FoodLibrary.swift */; };
 		FAF6CEF95BB821FCCCE7538A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AF39BA0DC45C424D131B8F /* SettingsView.swift */; };
@@ -47,6 +49,7 @@
 		1D125F3BBADAB406303A7672 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
 		2BD35A8C334998034C082248 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C4E5943BA4482D8C5B86016 /* FoodModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodModels.swift; sourceTree = "<group>"; };
+		3824D6FF0B9BCF07D6811729 /* ProteinCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinCalculator.swift; sourceTree = "<group>"; };
 		3B7263433EA888D434835033 /* FoodLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLibraryTests.swift; sourceTree = "<group>"; };
 		46CF7D82D576A149675A5412 /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		5647EC217428010511277B05 /* MealTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealTimer.swift; sourceTree = "<group>"; };
@@ -54,6 +57,7 @@
 		5B0793BDD64FB828A3E23A18 /* DietStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DietStage.swift; sourceTree = "<group>"; };
 		5B6E4CCBF8A640F265C6A1D4 /* StateDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateDecodingTests.swift; sourceTree = "<group>"; };
 		64291B18A22335E501A7EBC2 /* HealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthManager.swift; sourceTree = "<group>"; };
+		7507C9242C9A3AE1ED4EA391 /* ProteinCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinCalculatorTests.swift; sourceTree = "<group>"; };
 		7F53AFCA44F0818D6C82DEF2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		89468AAED101A7D84A44A157 /* VitaminsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitaminsView.swift; sourceTree = "<group>"; };
 		9AD5D40E333F57389C70128A /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
@@ -73,6 +77,7 @@
 				5B0793BDD64FB828A3E23A18 /* DietStage.swift */,
 				19A96F90C4A907B1EC4C60B0 /* FoodLibrary.swift */,
 				2C4E5943BA4482D8C5B86016 /* FoodModels.swift */,
+				3824D6FF0B9BCF07D6811729 /* ProteinCalculator.swift */,
 			);
 			path = Nutrition;
 			sourceTree = "<group>";
@@ -139,6 +144,7 @@
 			children = (
 				191B406267237C31F5289397 /* DietStageTests.swift */,
 				3B7263433EA888D434835033 /* FoodLibraryTests.swift */,
+				7507C9242C9A3AE1ED4EA391 /* ProteinCalculatorTests.swift */,
 				5B6E4CCBF8A640F265C6A1D4 /* StateDecodingTests.swift */,
 			);
 			path = BariatricHabitsTests;
@@ -236,6 +242,7 @@
 			files = (
 				AA8F8247B4658D231E204CCC /* DietStageTests.swift in Sources */,
 				F997035FABEA7FD3E6B31809 /* FoodLibraryTests.swift in Sources */,
+				F8AF33412D0499CB40D60973 /* ProteinCalculatorTests.swift in Sources */,
 				42EB3154E52D697287FBACFD /* StateDecodingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -257,6 +264,7 @@
 				1DD4CD0C012A39D94A2750D4 /* MealTimerView.swift in Sources */,
 				991BEA32ADC8F45DB5E9DE6D /* Models.swift in Sources */,
 				EA66ACF15F27354FF05017B6 /* NotificationManager.swift in Sources */,
+				7C831D968BFBBA8D800EF4A2 /* ProteinCalculator.swift in Sources */,
 				FAF6CEF95BB821FCCCE7538A /* SettingsView.swift in Sources */,
 				4C5CEBA0B5AB48FF31234E92 /* TodayView.swift in Sources */,
 				23406683E1EAC73D58FD7287 /* VitaminsView.swift in Sources */,

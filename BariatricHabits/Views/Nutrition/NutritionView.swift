@@ -9,6 +9,10 @@ struct NutritionView: View {
     @State private var pickedItem: PhotosPickerItem?
     @State private var reviewing: FoodEntry?
     @State private var errorMessage: String?
+    /// A saved photo's meal, held back until the cooking-note sheet closes.
+    @State private var capturedEntry: FoodEntry?
+    @State private var chosenCookingNote: String?
+    @State private var askingCookingNote = false
     private let photos = PhotoStore()
 
     private var todaysEntries: [FoodEntry] { store.today.foodEntries.sorted { $0.date > $1.date } }
@@ -49,7 +53,8 @@ struct NutritionView: View {
             .toolbar { ToolbarItem(placement: .primaryAction) { addMenu } }
             .refreshable { await analysisQueue.kick().value }
             .task { analysisQueue.kick() }
-            .sheet(isPresented: $showingCamera) {
+            // The camera sheet must be gone before the note sheet can be presented.
+            .sheet(isPresented: $showingCamera, onDismiss: { if capturedEntry != nil { askingCookingNote = true } }) {
                 CameraPicker { image in handleCaptured(image) }.ignoresSafeArea()
             }
             .photosPicker(isPresented: $showingPhotoPicker, selection: $pickedItem, matching: .images)
@@ -57,9 +62,14 @@ struct NutritionView: View {
                 guard let item else { return }
                 Task { await loadPicked(item) }
             }
+            .sheet(isPresented: $askingCookingNote, onDismiss: finishCapture) {
+                CookingNoteSheet { chosenCookingNote = $0 }
+                    .environment(\.layoutDirection, .rightToLeft)
+            }
             .sheet(item: $reviewing) { entry in
                 MealReviewView(entry: entry)
                     .environmentObject(store)
+                    .environmentObject(analysisQueue)
                     .environment(\.layoutDirection, .rightToLeft)
             }
             .alert("שגיאה", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
@@ -121,12 +131,23 @@ struct NutritionView: View {
     private func handleCaptured(_ image: UIImage) {
         do {
             let fileName = try photos.save(image)
-            store.upsertFoodEntry(FoodEntry(date: Date(), slotName: store.suggestedSlot()?.name,
-                                            photoFileName: fileName, status: .pending))
-            analysisQueue.kick()
+            capturedEntry = FoodEntry(date: Date(), slotName: store.suggestedSlot()?.name,
+                                      photoFileName: fileName, status: .pending)
+            chosenCookingNote = nil
+            if !showingCamera { askingCookingNote = true }
         } catch {
             errorMessage = "לא הצלחנו לשמור את התמונה."
         }
+    }
+
+    /// Runs for "המשך", "דלג" and a swipe-down alike (a swipe leaves the note nil).
+    private func finishCapture() {
+        guard var entry = capturedEntry else { return }
+        entry.cookingNote = chosenCookingNote
+        store.upsertFoodEntry(entry)
+        capturedEntry = nil
+        chosenCookingNote = nil
+        analysisQueue.kick()
     }
 
     private func loadPicked(_ item: PhotosPickerItem) async {
@@ -154,6 +175,12 @@ struct FoodEntryRow: View {
         return "\(entry.date.formatted(.dateTime.day().month(.abbreviated))) · \(base)"
     }
 
+    private var subtitle: String {
+        let base = entry.items.isEmpty ? entry.date.timeText : entry.items.map(\.name).joined(separator: ", ")
+        guard let note = entry.cookingNote, !note.isEmpty else { return base }
+        return "\(base) · \(note)"
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             Group {
@@ -169,7 +196,7 @@ struct FoodEntryRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.headline)
-                Text(entry.items.isEmpty ? entry.date.timeText : entry.items.map(\.name).joined(separator: ", "))
+                Text(subtitle)
                     .font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer()

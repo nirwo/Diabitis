@@ -5,10 +5,12 @@ import XCTest
 final class FakeBridgeClient: BridgeClienting {
     var analyzeResults: [Result<AnalysisResult, BridgeError>] = []
     private(set) var analyzeCalls = 0
+    private(set) var cookingNotes: [String?] = []
     var onAnalyze: (@MainActor () -> Void)?
 
-    func analyze(jpeg: Data) async throws -> AnalysisResult {
+    func analyze(jpeg: Data, cookingNote: String?) async throws -> AnalysisResult {
         analyzeCalls += 1
+        cookingNotes.append(cookingNote)
         await onAnalyze?()
         try await Task.sleep(nanoseconds: 10_000_000)
         guard !analyzeResults.isEmpty else { throw BridgeError.unreachable }
@@ -38,11 +40,11 @@ final class AnalysisQueueTests: XCTestCase {
     }
 
     @discardableResult
-    private func addPending(withPhoto: Bool = true) throws -> FoodEntry {
+    private func addPending(withPhoto: Bool = true, cookingNote: String? = nil) throws -> FoodEntry {
         let name = withPhoto
             ? try photos.save(UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).image { _ in })
             : "missing.jpg"
-        let entry = FoodEntry(date: Date(), photoFileName: name, status: .pending)
+        let entry = FoodEntry(date: Date(), photoFileName: name, status: .pending, cookingNote: cookingNote)
         store.upsertFoodEntry(entry)
         return entry
     }
@@ -60,6 +62,22 @@ final class AnalysisQueueTests: XCTestCase {
         XCTAssertEqual(saved.items.first?.proteinG, 6.3)
         XCTAssertEqual(saved.notes, "נראה טעים")
         XCTAssertEqual(store.proteinToday, 0, "not counted until the user confirms")
+    }
+
+    func test_cooking_note_is_sent_and_remembered_as_analyzed() async throws {
+        let entry = try addPending(cookingNote: "מטוגן בשמן")
+        client.analyzeResults = [.success(egg)]
+        await queue.processPending()
+        XCTAssertEqual(client.cookingNotes, ["מטוגן בשמן"])
+        let saved = try XCTUnwrap(store.allFoodEntries.first { $0.id == entry.id })
+        XCTAssertEqual(saved.analyzedCookingNote, "מטוגן בשמן")
+    }
+
+    func test_failed_analysis_does_not_mark_note_as_analyzed() async throws {
+        let entry = try addPending(cookingNote: "אפוי בתנור")
+        client.analyzeResults = [.failure(.badModelOutput)]
+        await queue.processPending()
+        XCTAssertNil(store.allFoodEntries.first { $0.id == entry.id }?.analyzedCookingNote)
     }
 
     func test_unreachable_keeps_pending_and_stops() async throws {

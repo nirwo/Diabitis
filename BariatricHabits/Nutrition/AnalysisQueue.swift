@@ -47,13 +47,15 @@ final class AnalysisQueue: ObservableObject {
             }
             store.updateFoodEntry(id: entry.id) { $0.status = .analyzing }
             do {
-                let result = try await client.analyze(jpeg: jpeg)
+                let cookingNote = entry.cookingNote
+                let result = try await client.analyze(jpeg: jpeg, cookingNote: cookingNote)
                 store.updateFoodEntry(id: entry.id) {
                     guard $0.status == .analyzing else { return }
                     $0.items = result.items.map {
                         FoodItem(name: $0.name, grams: $0.grams, proteinG: $0.proteinG, confidence: $0.confidence).sanitized
                     }
                     $0.notes = result.notes.isEmpty ? nil : result.notes
+                    $0.analyzedCookingNote = cookingNote
                     $0.status = .needsReview
                 }
                 lastError = nil

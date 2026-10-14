@@ -3,14 +3,22 @@ import SwiftUI
 
 struct MealReviewView: View {
     @EnvironmentObject private var store: AppStore
+    @EnvironmentObject private var analysisQueue: AnalysisQueue
     @Environment(\.dismiss) private var dismiss
     @State private var entry: FoodEntry
+    @State private var cookingDraft: CookingNoteDraft
     @State private var showingLibraryPicker = false
     @State private var photo: UIImage?
     private let photos = PhotoStore()
 
     init(entry: FoodEntry) {
         _entry = State(initialValue: entry)
+        _cookingDraft = State(initialValue: CookingNoteDraft(note: entry.cookingNote))
+    }
+
+    /// The stored estimate was made with a different note than the one now chosen.
+    private var canReanalyze: Bool {
+        entry.photoFileName != nil && entry.status != .analyzing && cookingDraft.note != entry.analyzedCookingNote
     }
 
     private var canSave: Bool {
@@ -39,6 +47,14 @@ struct MealReviewView: View {
                     Text("מה יש בצלחת")
                 } footer: {
                     Text("סה\"כ חלבון: \(formatGrams(entry.proteinG)) גר'")
+                }
+                Section("איך הכנתי") {
+                    CookingNoteEditor(draft: $cookingDraft)
+                    if canReanalyze {
+                        Button { reanalyze() } label: {
+                            Label("זהה מחדש עם אופן ההכנה", systemImage: "arrow.clockwise")
+                        }
+                    }
                 }
                 if let notes = entry.notes, !notes.isEmpty {
                     Section("הערה מהזיהוי") { Text(notes) }
@@ -87,8 +103,18 @@ struct MealReviewView: View {
 
     /// A saved entry always counts toward the goal: photo entries become confirmed, others manual.
     private func save() {
+        entry.cookingNote = cookingDraft.note
         entry.status = entry.photoFileName == nil ? .manual : .confirmed
         store.upsertFoodEntry(entry)
+        dismiss()
+    }
+
+    /// Sends the photo again with the edited note; the new result replaces the items when it arrives.
+    private func reanalyze() {
+        entry.cookingNote = cookingDraft.note
+        entry.status = .pending
+        store.upsertFoodEntry(entry)
+        analysisQueue.kick()
         dismiss()
     }
 }

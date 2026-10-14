@@ -92,6 +92,10 @@ struct FoodEntry: Codable, Identifiable, Hashable {
     var photoFileName: String?
     var status: FoodEntryStatus
     var notes: String?
+    /// How the user says the meal was prepared, sent with the photo. Optional, so older saves still decode.
+    var cookingNote: String? = nil
+    /// The cooking note the stored analysis was made with, to offer re-analysis after it changes.
+    var analyzedCookingNote: String? = nil
 
     var proteinG: Double { items.reduce(0) { $0 + $1.proteinG } }
 }

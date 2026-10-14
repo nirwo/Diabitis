@@ -48,7 +48,7 @@ enum BridgeError: Error, Equatable {
 }
 
 protocol BridgeClienting {
-    func analyze(jpeg: Data) async throws -> AnalysisResult
+    func analyze(jpeg: Data, cookingNote: String?) async throws -> AnalysisResult
     func recipe(_ request: RecipeRequest) async throws -> RecipeSuggestion
     func health() async throws -> BridgeHealth
 }
@@ -70,9 +70,17 @@ struct BridgeClient: BridgeClienting {
         self.session = session
     }
 
-    func analyze(jpeg: Data) async throws -> AnalysisResult {
+    /// RFC 3986 unreserved characters only. `.alphanumerics` would let Hebrew letters through,
+    /// and HTTP header values must be ASCII.
+    private static let headerSafeCharacters = CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+
+    func analyze(jpeg: Data, cookingNote: String?) async throws -> AnalysisResult {
         var request = makeRequest(path: "analyze", method: "POST", timeout: Self.analyzeTimeout)
         request.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
+        if let cookingNote, let encoded = cookingNote.addingPercentEncoding(withAllowedCharacters: Self.headerSafeCharacters) {
+            request.setValue(encoded, forHTTPHeaderField: "X-Cooking-Note")
+        }
         request.httpBody = jpeg
         return try await send(request)
     }

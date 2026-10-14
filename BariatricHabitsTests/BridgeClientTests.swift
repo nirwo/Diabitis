@@ -41,8 +41,32 @@ final class BridgeClientTests: XCTestCase {
             XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "image/jpeg")
             return (200, Data(#"{"items":[{"name":"ביצה","grams":50,"protein_g":6.3,"confidence":"high"}],"notes":""}"#.utf8))
         }
-        let result = try await client.analyze(jpeg: Data([0xFF, 0xD8]))
+        let result = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: nil)
         XCTAssertEqual(result.items, [AnalyzedItem(name: "ביצה", grams: 50, proteinG: 6.3, confidence: .high)])
+    }
+
+    func test_analyze_sends_percent_encoded_cooking_note() async throws {
+        let note = "מטוגן בשמן, בכף שמן זית"
+        var header: String?
+        StubURLProtocol.handler = { request in
+            header = request.value(forHTTPHeaderField: "X-Cooking-Note")
+            return (200, Data(#"{"items":[],"notes":""}"#.utf8))
+        }
+        _ = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: note)
+        let sent = try XCTUnwrap(header)
+        XCTAssertTrue(sent.allSatisfy(\.isASCII), "header values must be ASCII: \(sent)")
+        XCTAssertEqual(sent.removingPercentEncoding, note)
+    }
+
+    func test_analyze_omits_cooking_note_header_when_nil() async throws {
+        var headers: [String: String]?
+        StubURLProtocol.handler = { request in
+            headers = request.allHTTPHeaderFields
+            return (200, Data(#"{"items":[],"notes":""}"#.utf8))
+        }
+        _ = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: nil)
+        XCTAssertNotNil(headers?["Authorization"])
+        XCTAssertNil(headers?["X-Cooking-Note"])
     }
 
     func test_status_codes_map_to_errors() async {
@@ -68,7 +92,7 @@ final class BridgeClientTests: XCTestCase {
 
     func test_cancelled_request_maps_to_CancellationError() async {
         StubURLProtocol.handler = { _ in throw URLError(.cancelled) }
-        do { _ = try await client.analyze(jpeg: Data()); XCTFail("expected error") } catch {
+        do { _ = try await client.analyze(jpeg: Data(), cookingNote: nil); XCTFail("expected error") } catch {
             XCTAssertTrue(error is CancellationError, "got \(error)")
         }
     }
@@ -80,7 +104,7 @@ final class BridgeClientTests: XCTestCase {
             return (200, Data(#"{"status":"ok","claude":true}"#.utf8))
         }
         _ = try await client.health()
-        _ = try? await client.analyze(jpeg: Data())
+        _ = try? await client.analyze(jpeg: Data(), cookingNote: nil)
         _ = try? await client.recipe(RecipeRequest(remainingG: 30, stage: .soft, have: []))
         XCTAssertEqual(timeouts["/health"], 10)
         XCTAssertEqual(timeouts["/analyze"], 150)
@@ -90,7 +114,7 @@ final class BridgeClientTests: XCTestCase {
 
     func test_undecodable_success_body_is_badModelOutput() async {
         StubURLProtocol.handler = { _ in (200, Data("nope".utf8)) }
-        do { _ = try await client.analyze(jpeg: Data()); XCTFail("expected error") } catch {
+        do { _ = try await client.analyze(jpeg: Data(), cookingNote: nil); XCTFail("expected error") } catch {
             XCTAssertEqual(error as? BridgeError, .badModelOutput)
         }
     }

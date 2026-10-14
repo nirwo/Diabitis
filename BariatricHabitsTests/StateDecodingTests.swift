@@ -27,6 +27,26 @@ final class StateDecodingTests: XCTestCase {
         XCTAssertEqual(state.days["2026-10-13"]?.foodEntries, [])
     }
 
+    func test_food_entry_saved_before_cooking_notes_decodes() throws {
+        let json = """
+        {"id":"6F9619FF-8B86-D011-B42D-00C04FC964FF","date":800000000,"slotName":"ארוחת צהריים",
+         "items":[{"id":"7F9619FF-8B86-D011-B42D-00C04FC964FF","name":"ביצה","grams":50,"proteinG":6.3,"confidence":"high"}],
+         "photoFileName":"a.jpg","status":{"confirmed":{}},"notes":"נראה טעים"}
+        """
+        let entry = try JSONDecoder().decode(FoodEntry.self, from: Data(json.utf8))
+        XCTAssertEqual(entry.slotName, "ארוחת צהריים")
+        XCTAssertEqual(entry.items.first?.proteinG, 6.3)
+        XCTAssertEqual(entry.status, .confirmed)
+        XCTAssertNil(entry.cookingNote)
+        XCTAssertNil(entry.analyzedCookingNote)
+    }
+
+    func test_cooking_notes_round_trip() throws {
+        let entry = FoodEntry(date: Date(timeIntervalSince1970: 1_800_000_000), photoFileName: "a.jpg",
+                              status: .needsReview, cookingNote: "מבושל", analyzedCookingNote: "מבושל")
+        XCTAssertEqual(try JSONDecoder().decode(FoodEntry.self, from: JSONEncoder().encode(entry)), entry)
+    }
+
     func test_new_state_round_trips() throws {
         var state = AppState()
         state.settings.proteinGoalGrams = 110

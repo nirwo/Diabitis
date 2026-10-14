@@ -3,3 +3,4 @@ xcuserdata/
 DerivedData/
 .DS_Store
 build/
+bridge/__pycache__/

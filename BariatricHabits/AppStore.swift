@@ -198,13 +198,8 @@ final class AppStore: ObservableObject {
                     "זה הזמן לתרגל את ההרגלים החדשים: אכילה איטית, לעיסה, הפרדת שתייה ובלי מוגזים.")
         }
         if days == 0 { return ("יום הניתוח", "בהצלחה! לפעול לפי הנחיות הצוות הרפואי.") }
-        let stage: String
-        switch days {
-        case 1...14: stage = "שלב משוער: נוזלים"
-        case 15...28: stage = "שלב משוער: מחית"
-        case 29...56: stage = "שלב משוער: מזון רך"
-        default: stage = "שלב משוער: תזונה רגילה ומותאמת"
-        }
-        return ("יום \(days) אחרי הניתוח", "\(stage) — יש לפעול לפי ההנחיות של הדיאטנית שלך.")
+        let stage = DietStage.from(surgeryDate: surgery, now: now, calendar: cal) ?? .regular
+        let stageText = stage == .regular ? "שלב משוער: תזונה רגילה ומותאמת" : "שלב משוער: \(stage.title)"
+        return ("יום \(days) אחרי הניתוח", "\(stageText) — יש לפעול לפי ההנחיות של הדיאטנית שלך.")
     }
 }

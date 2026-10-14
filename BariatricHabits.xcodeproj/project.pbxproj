@@ -6,190 +6,411 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0D43C071F118927CE0C96C26 /* GuidelinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A60C58769932B71E3F8EB5 /* GuidelinesView.swift */; };
+		128700B4B1852384A1D219FD /* DietStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B0793BDD64FB828A3E23A18 /* DietStage.swift */; };
+		1DD4CD0C012A39D94A2750D4 /* MealTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0FDFD8514DE437305A851D7 /* MealTimerView.swift */; };
+		23406683E1EAC73D58FD7287 /* VitaminsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89468AAED101A7D84A44A157 /* VitaminsView.swift */; };
+		2352255640D280A2AB2BA5C3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F53AFCA44F0818D6C82DEF2 /* ContentView.swift */; };
+		4C5CEBA0B5AB48FF31234E92 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46CF7D82D576A149675A5412 /* TodayView.swift */; };
+		55533B519379F7745AC1E829 /* MealTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5647EC217428010511277B05 /* MealTimer.swift */; };
+		812EC6E636EEF4A44D02688E /* HealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64291B18A22335E501A7EBC2 /* HealthManager.swift */; };
+		991BEA32ADC8F45DB5E9DE6D /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12FE9E8D4C551B389261D7AD /* Models.swift */; };
+		A750C744F2E63961FF62E490 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD5D40E333F57389C70128A /* ActivityView.swift */; };
+		AA8F8247B4658D231E204CCC /* DietStageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 191B406267237C31F5289397 /* DietStageTests.swift */; };
+		B53BCB8F4F00E666B6C54614 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2BD35A8C334998034C082248 /* Assets.xcassets */; };
+		D94F31F2578CB8FB476FA59E /* BariatricHabitsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */; };
+		E1080EE7EDB49BE9F04B5C06 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D125F3BBADAB406303A7672 /* AppStore.swift */; };
+		EA66ACF15F27354FF05017B6 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3487505D9A6A737EC6FD868 /* NotificationManager.swift */; };
+		FAF6CEF95BB821FCCCE7538A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AF39BA0DC45C424D131B8F /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2604112288AF58585DD24C21 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1FE061D27DABEEC47802F85B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5E08A370C4F6873E81790947;
+			remoteInfo = BariatricHabits;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		BA0000000000000000000001 /* BariatricHabits.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BariatricHabits.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BA0000000000000000000014 /* BariatricHabits.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BariatricHabits.entitlements; sourceTree = "<group>"; };
+		12FE9E8D4C551B389261D7AD /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		191B406267237C31F5289397 /* DietStageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DietStageTests.swift; sourceTree = "<group>"; };
+		1D125F3BBADAB406303A7672 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
+		2BD35A8C334998034C082248 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		46CF7D82D576A149675A5412 /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		5647EC217428010511277B05 /* MealTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealTimer.swift; sourceTree = "<group>"; };
+		56AF39BA0DC45C424D131B8F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		5B0793BDD64FB828A3E23A18 /* DietStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DietStage.swift; sourceTree = "<group>"; };
+		64291B18A22335E501A7EBC2 /* HealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthManager.swift; sourceTree = "<group>"; };
+		7F53AFCA44F0818D6C82DEF2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		89468AAED101A7D84A44A157 /* VitaminsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitaminsView.swift; sourceTree = "<group>"; };
+		9AD5D40E333F57389C70128A /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
+		A0FDFD8514DE437305A851D7 /* MealTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealTimerView.swift; sourceTree = "<group>"; };
+		A6A60C58769932B71E3F8EB5 /* GuidelinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidelinesView.swift; sourceTree = "<group>"; };
+		BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BariatricHabitsApp.swift; sourceTree = "<group>"; };
+		BF39C5F297C84F0F767452EE /* BariatricHabits.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BariatricHabits.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3487505D9A6A737EC6FD868 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		F90A8657557BB061A28B9B48 /* BariatricHabitsTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BariatricHabitsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		BA0000000000000000000002 /* BariatricHabits */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
+/* Begin PBXGroup section */
+		0E70784FA0DBF678688DB858 /* Nutrition */ = {
+			isa = PBXGroup;
+			children = (
+				5B0793BDD64FB828A3E23A18 /* DietStage.swift */,
+			);
+			path = Nutrition;
+			sourceTree = "<group>";
+		};
+		0E8B4EBBBFFB4D48A389AAE3 = {
+			isa = PBXGroup;
+			children = (
+				AEFF20F881D4A05CA0A81D23 /* BariatricHabits */,
+				FCA46E9D147887825EECE66D /* BariatricHabitsTests */,
+				8A1753ED2A6BAC19C834C64F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8A1753ED2A6BAC19C834C64F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BF39C5F297C84F0F767452EE /* BariatricHabits.app */,
+				F90A8657557BB061A28B9B48 /* BariatricHabitsTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AEFF20F881D4A05CA0A81D23 /* BariatricHabits */ = {
+			isa = PBXGroup;
+			children = (
+				1D125F3BBADAB406303A7672 /* AppStore.swift */,
+				2BD35A8C334998034C082248 /* Assets.xcassets */,
+				BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */,
+				64291B18A22335E501A7EBC2 /* HealthManager.swift */,
+				5647EC217428010511277B05 /* MealTimer.swift */,
+				12FE9E8D4C551B389261D7AD /* Models.swift */,
+				E3487505D9A6A737EC6FD868 /* NotificationManager.swift */,
+				0E70784FA0DBF678688DB858 /* Nutrition */,
+				CD55165F822AA854C59D63D1 /* Views */,
+			);
 			path = BariatricHabits;
 			sourceTree = "<group>";
 		};
-/* End PBXFileSystemSynchronizedRootGroup section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		BA0000000000000000000003 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
-
-/* Begin PBXGroup section */
-		BA0000000000000000000004 = {
+		CD55165F822AA854C59D63D1 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				BA0000000000000000000002 /* BariatricHabits */,
-				BA0000000000000000000014 /* BariatricHabits.entitlements */,
-				BA0000000000000000000005 /* Products */,
+				9AD5D40E333F57389C70128A /* ActivityView.swift */,
+				7F53AFCA44F0818D6C82DEF2 /* ContentView.swift */,
+				A6A60C58769932B71E3F8EB5 /* GuidelinesView.swift */,
+				A0FDFD8514DE437305A851D7 /* MealTimerView.swift */,
+				56AF39BA0DC45C424D131B8F /* SettingsView.swift */,
+				46CF7D82D576A149675A5412 /* TodayView.swift */,
+				89468AAED101A7D84A44A157 /* VitaminsView.swift */,
 			);
+			path = Views;
 			sourceTree = "<group>";
 		};
-		BA0000000000000000000005 /* Products */ = {
+		FCA46E9D147887825EECE66D /* BariatricHabitsTests */ = {
 			isa = PBXGroup;
 			children = (
-				BA0000000000000000000001 /* BariatricHabits.app */,
+				191B406267237C31F5289397 /* DietStageTests.swift */,
 			);
-			name = Products;
+			path = BariatricHabitsTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BA0000000000000000000006 /* BariatricHabits */ = {
+		5E08A370C4F6873E81790947 /* BariatricHabits */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BA0000000000000000000007 /* Build configuration list for PBXNativeTarget "BariatricHabits" */;
+			buildConfigurationList = 12205CB86C67E7349D519148 /* Build configuration list for PBXNativeTarget "BariatricHabits" */;
 			buildPhases = (
-				BA0000000000000000000008 /* Sources */,
-				BA0000000000000000000003 /* Frameworks */,
-				BA0000000000000000000009 /* Resources */,
+				DBBEE043F00072D8A4F47615 /* Sources */,
+				A481D596A794507B52B9C526 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				BA0000000000000000000002 /* BariatricHabits */,
-			);
 			name = BariatricHabits;
 			packageProductDependencies = (
 			);
 			productName = BariatricHabits;
-			productReference = BA0000000000000000000001 /* BariatricHabits.app */;
+			productReference = BF39C5F297C84F0F767452EE /* BariatricHabits.app */;
 			productType = "com.apple.product-type.application";
+		};
+		70178FE2F5F45D7445DD021C /* BariatricHabitsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 121BC1E56832085EA7E79387 /* Build configuration list for PBXNativeTarget "BariatricHabitsTests" */;
+			buildPhases = (
+				CE29CC0ED972A59FFA02A9F9 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5EDC5C5DD4A19DAF3E43BED8 /* PBXTargetDependency */,
+			);
+			name = BariatricHabitsTests;
+			packageProductDependencies = (
+			);
+			productName = BariatricHabitsTests;
+			productReference = F90A8657557BB061A28B9B48 /* BariatricHabitsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		BA000000000000000000000A /* Project object */ = {
+		1FE061D27DABEEC47802F85B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					BA0000000000000000000006 = {
-						CreatedOnToolsVersion = 16.0;
-					};
 				};
 			};
-			buildConfigurationList = BA000000000000000000000B /* Build configuration list for PBXProject "BariatricHabits" */;
+			buildConfigurationList = BDE9402961AFD8CE7FB90B39 /* Build configuration list for PBXProject "BariatricHabits" */;
 			developmentRegion = he;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				he,
-				en,
 				Base,
+				he,
 			);
-			mainGroup = BA0000000000000000000004;
+			mainGroup = 0E8B4EBBBFFB4D48A389AAE3;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = BA0000000000000000000005 /* Products */;
+			productRefGroup = 8A1753ED2A6BAC19C834C64F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BA0000000000000000000006 /* BariatricHabits */,
+				5E08A370C4F6873E81790947 /* BariatricHabits */,
+				70178FE2F5F45D7445DD021C /* BariatricHabitsTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		BA0000000000000000000009 /* Resources */ = {
+		A481D596A794507B52B9C526 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B53BCB8F4F00E666B6C54614 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		BA0000000000000000000008 /* Sources */ = {
+		CE29CC0ED972A59FFA02A9F9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA8F8247B4658D231E204CCC /* DietStageTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBBEE043F00072D8A4F47615 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A750C744F2E63961FF62E490 /* ActivityView.swift in Sources */,
+				E1080EE7EDB49BE9F04B5C06 /* AppStore.swift in Sources */,
+				D94F31F2578CB8FB476FA59E /* BariatricHabitsApp.swift in Sources */,
+				2352255640D280A2AB2BA5C3 /* ContentView.swift in Sources */,
+				128700B4B1852384A1D219FD /* DietStage.swift in Sources */,
+				0D43C071F118927CE0C96C26 /* GuidelinesView.swift in Sources */,
+				812EC6E636EEF4A44D02688E /* HealthManager.swift in Sources */,
+				55533B519379F7745AC1E829 /* MealTimer.swift in Sources */,
+				1DD4CD0C012A39D94A2750D4 /* MealTimerView.swift in Sources */,
+				991BEA32ADC8F45DB5E9DE6D /* Models.swift in Sources */,
+				EA66ACF15F27354FF05017B6 /* NotificationManager.swift in Sources */,
+				FAF6CEF95BB821FCCCE7538A /* SettingsView.swift in Sources */,
+				4C5CEBA0B5AB48FF31234E92 /* TodayView.swift in Sources */,
+				23406683E1EAC73D58FD7287 /* VitaminsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		5EDC5C5DD4A19DAF3E43BED8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5E08A370C4F6873E81790947 /* BariatricHabits */;
+			targetProxy = 2604112288AF58585DD24C21 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
-		BA000000000000000000000C /* Debug */ = {
+		0886F08DFA9448B3454B7DC8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nirwo.bariatrichabits.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BariatricHabits.app/BariatricHabits";
+			};
+			name = Release;
+		};
+		1FE888E6EDAD9798E902DFE6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
 					"$(inherited)",
+					"DEBUG=1",
 				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		BA000000000000000000000D /* Release */ = {
+		284C5E62DC64DC01BBB3B971 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				VALIDATE_PRODUCT = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
-		BA000000000000000000000E /* Debug */ = {
+		6E4E30CA94CD66A87351F1B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nirwo.bariatrichabits.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BariatricHabits.app/BariatricHabits";
+			};
+			name = Debug;
+		};
+		E8B49031E64065532336AD84 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = BariatricHabits.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "הרגלים";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "האפליקציה קוראת את מספר הצעדים כדי להציג את ההתקדמות היומית וההליכות שלך.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "האפליקציה אינה כותבת נתונים לאפליקציית בריאות.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -198,29 +419,25 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nirwo.bariatrichabits;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
+				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
-		BA000000000000000000000F /* Release */ = {
+		FB999E691CA150B8CDD17FF8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = BariatricHabits.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "הרגלים";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "האפליקציה קוראת את מספר הצעדים כדי להציג את ההתקדמות היומית וההליכות שלך.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "האפליקציה אינה כותבת נתונים לאפליקציית בריאות.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -229,8 +446,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nirwo.bariatrichabits;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
+				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -239,25 +455,34 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BA0000000000000000000007 /* Build configuration list for PBXNativeTarget "BariatricHabits" */ = {
+		121BC1E56832085EA7E79387 /* Build configuration list for PBXNativeTarget "BariatricHabitsTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				BA000000000000000000000E /* Debug */,
-				BA000000000000000000000F /* Release */,
+				6E4E30CA94CD66A87351F1B3 /* Debug */,
+				0886F08DFA9448B3454B7DC8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
-		BA000000000000000000000B /* Build configuration list for PBXProject "BariatricHabits" */ = {
+		12205CB86C67E7349D519148 /* Build configuration list for PBXNativeTarget "BariatricHabits" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				BA000000000000000000000C /* Debug */,
-				BA000000000000000000000D /* Release */,
+				E8B49031E64065532336AD84 /* Debug */,
+				FB999E691CA150B8CDD17FF8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
+		};
+		BDE9402961AFD8CE7FB90B39 /* Build configuration list for PBXProject "BariatricHabits" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1FE888E6EDAD9798E902DFE6 /* Debug */,
+				284C5E62DC64DC01BBB3B971 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = BA000000000000000000000A /* Project object */;
+	rootObject = 1FE061D27DABEEC47802F85B /* Project object */;
 }

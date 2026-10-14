@@ -13,6 +13,7 @@
 		1DD4CD0C012A39D94A2750D4 /* MealTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0FDFD8514DE437305A851D7 /* MealTimerView.swift */; };
 		23406683E1EAC73D58FD7287 /* VitaminsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89468AAED101A7D84A44A157 /* VitaminsView.swift */; };
 		2352255640D280A2AB2BA5C3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F53AFCA44F0818D6C82DEF2 /* ContentView.swift */; };
+		270C4BBDA67433F4F8EEF246 /* PhotoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8931213B8594F070AEAC5B5 /* PhotoStore.swift */; };
 		2F0B5A3BBD69E18EFD09AFB8 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCED643C61333E07C04A1181 /* KeychainStore.swift */; };
 		42EB3154E52D697287FBACFD /* StateDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6E4CCBF8A640F265C6A1D4 /* StateDecodingTests.swift */; };
 		4C5CEBA0B5AB48FF31234E92 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46CF7D82D576A149675A5412 /* TodayView.swift */; };
@@ -32,6 +33,7 @@
 		F8AF33412D0499CB40D60973 /* ProteinCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7507C9242C9A3AE1ED4EA391 /* ProteinCalculatorTests.swift */; };
 		F997035FABEA7FD3E6B31809 /* FoodLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7263433EA888D434835033 /* FoodLibraryTests.swift */; };
 		FA82F006104C69D527256CC0 /* FoodLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A96F90C4A907B1EC4C60B0 /* FoodLibrary.swift */; };
+		FA9CBF27F19EA0123763AF6D /* PhotoStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2939A4758707CA4DE5F2767C /* PhotoStoreTests.swift */; };
 		FAF6CEF95BB821FCCCE7538A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AF39BA0DC45C424D131B8F /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +52,7 @@
 		191B406267237C31F5289397 /* DietStageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DietStageTests.swift; sourceTree = "<group>"; };
 		19A96F90C4A907B1EC4C60B0 /* FoodLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLibrary.swift; sourceTree = "<group>"; };
 		1D125F3BBADAB406303A7672 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
+		2939A4758707CA4DE5F2767C /* PhotoStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStoreTests.swift; sourceTree = "<group>"; };
 		2BD35A8C334998034C082248 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C4E5943BA4482D8C5B86016 /* FoodModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodModels.swift; sourceTree = "<group>"; };
 		3824D6FF0B9BCF07D6811729 /* ProteinCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinCalculator.swift; sourceTree = "<group>"; };
@@ -73,6 +76,7 @@
 		BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BariatricHabitsApp.swift; sourceTree = "<group>"; };
 		BF39C5F297C84F0F767452EE /* BariatricHabits.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BariatricHabits.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3487505D9A6A737EC6FD868 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		E8931213B8594F070AEAC5B5 /* PhotoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStore.swift; sourceTree = "<group>"; };
 		F90A8657557BB061A28B9B48 /* BariatricHabitsTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BariatricHabitsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -83,6 +87,7 @@
 				5B0793BDD64FB828A3E23A18 /* DietStage.swift */,
 				19A96F90C4A907B1EC4C60B0 /* FoodLibrary.swift */,
 				2C4E5943BA4482D8C5B86016 /* FoodModels.swift */,
+				E8931213B8594F070AEAC5B5 /* PhotoStore.swift */,
 				3824D6FF0B9BCF07D6811729 /* ProteinCalculator.swift */,
 			);
 			path = Nutrition;
@@ -161,6 +166,7 @@
 				994180134D4BB3729F25F76B /* BridgeClientTests.swift */,
 				191B406267237C31F5289397 /* DietStageTests.swift */,
 				3B7263433EA888D434835033 /* FoodLibraryTests.swift */,
+				2939A4758707CA4DE5F2767C /* PhotoStoreTests.swift */,
 				7507C9242C9A3AE1ED4EA391 /* ProteinCalculatorTests.swift */,
 				5B6E4CCBF8A640F265C6A1D4 /* StateDecodingTests.swift */,
 			);
@@ -260,6 +266,7 @@
 				56A82ED7949D4E0BEDAB2CE8 /* BridgeClientTests.swift in Sources */,
 				AA8F8247B4658D231E204CCC /* DietStageTests.swift in Sources */,
 				F997035FABEA7FD3E6B31809 /* FoodLibraryTests.swift in Sources */,
+				FA9CBF27F19EA0123763AF6D /* PhotoStoreTests.swift in Sources */,
 				F8AF33412D0499CB40D60973 /* ProteinCalculatorTests.swift in Sources */,
 				42EB3154E52D697287FBACFD /* StateDecodingTests.swift in Sources */,
 			);
@@ -284,6 +291,7 @@
 				1DD4CD0C012A39D94A2750D4 /* MealTimerView.swift in Sources */,
 				991BEA32ADC8F45DB5E9DE6D /* Models.swift in Sources */,
 				EA66ACF15F27354FF05017B6 /* NotificationManager.swift in Sources */,
+				270C4BBDA67433F4F8EEF246 /* PhotoStore.swift in Sources */,
 				7C831D968BFBBA8D800EF4A2 /* ProteinCalculator.swift in Sources */,
 				FAF6CEF95BB821FCCCE7538A /* SettingsView.swift in Sources */,
 				4C5CEBA0B5AB48FF31234E92 /* TodayView.swift in Sources */,

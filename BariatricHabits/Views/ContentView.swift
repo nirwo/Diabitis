@@ -39,7 +39,7 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 Task { await health.refresh() }
-                Task { await analysisQueue.processPending() }
+                analysisQueue.kick()
             }
         }
     }

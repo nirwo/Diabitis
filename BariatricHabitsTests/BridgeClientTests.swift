@@ -66,6 +66,28 @@ final class BridgeClientTests: XCTestCase {
         }
     }
 
+    func test_cancelled_request_maps_to_CancellationError() async {
+        StubURLProtocol.handler = { _ in throw URLError(.cancelled) }
+        do { _ = try await client.analyze(jpeg: Data()); XCTFail("expected error") } catch {
+            XCTAssertTrue(error is CancellationError, "got \(error)")
+        }
+    }
+
+    func test_request_timeouts_outlast_the_bridge() async throws {
+        var timeouts: [String: TimeInterval] = [:]
+        StubURLProtocol.handler = { request in
+            timeouts[request.url?.path ?? ""] = request.timeoutInterval
+            return (200, Data(#"{"status":"ok","claude":true}"#.utf8))
+        }
+        _ = try await client.health()
+        _ = try? await client.analyze(jpeg: Data())
+        _ = try? await client.recipe(RecipeRequest(remainingG: 30, stage: .soft, have: []))
+        XCTAssertEqual(timeouts["/health"], 10)
+        XCTAssertEqual(timeouts["/analyze"], 150)
+        XCTAssertEqual(timeouts["/recipe"], 150)
+        XCTAssertGreaterThan(BridgeClient.analyzeTimeout, 120, "must exceed CLAUDE_TIMEOUT_SECONDS")
+    }
+
     func test_undecodable_success_body_is_badModelOutput() async {
         StubURLProtocol.handler = { _ in (200, Data("nope".utf8)) }
         do { _ = try await client.analyze(jpeg: Data()); XCTFail("expected error") } catch {
@@ -89,6 +111,16 @@ final class BridgeConfigTests: XCTestCase {
         XCTAssertEqual(BridgeConfig.normalizedURL(from: " 100.64.1.2:9000 ")?.absoluteString, "http://100.64.1.2:9000")
         XCTAssertEqual(BridgeConfig.normalizedURL(from: "http://mac.tail1234.ts.net:8787/")?.absoluteString,
                        "http://mac.tail1234.ts.net:8787")
+    }
+
+    func test_accepts_only_tailscale_and_localhost() {
+        for address in ["100.64.1.2", "100.127.255.254", "mac.tail1234.ts.net", "localhost", "127.0.0.1"] {
+            XCTAssertNotNil(BridgeConfig.normalizedURL(from: address), address)
+        }
+        for address in ["10.0.0.5", "192.168.1.10", "example.com", "100.128.0.1", "100.63.255.255",
+                        "ts.net", "evil-ts.net", "100.64.1"] {
+            XCTAssertNil(BridgeConfig.normalizedURL(from: address), address)
+        }
     }
 
     func test_rejects_invalid_addresses() {

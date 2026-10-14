@@ -14,7 +14,7 @@ struct BridgeSettingsSection: View {
 
     var body: some View {
         Section {
-            TextField("כתובת המק, למשל mac.tailnet.ts.net", text: address)
+            TextField("כתובת Tailscale של המק, למשל mac.tailnet.ts.net", text: address)
                 .keyboardType(.URL)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
@@ -38,7 +38,7 @@ struct BridgeSettingsSection: View {
         } header: {
             Text("זיהוי ארוחות דרך המק")
         } footer: {
-            Text("את הכתובת והטוקן מקבלים מהפקודה bridge/install.sh במק. הטוקן נשמר ב-Keychain.")
+            Text("את הכתובת והטוקן מקבלים מהפקודה bridge/install.sh במק. רק כתובת Tailscale מתקבלת (100.x.x.x או שם שמסתיים ב-ts.net). הטוקן נשמר ב-Keychain.")
         }
     }
 
@@ -59,14 +59,15 @@ struct BridgeSettingsSection: View {
         isChecking = true
         defer { isChecking = false }
         guard let client = BridgeConfig.makeClient(settings: store.state.settings) else {
-            message = "חסרים כתובת או טוקן, או שהכתובת לא תקינה."
+            message = "חסרים כתובת או טוקן, או שהכתובת אינה כתובת Tailscale (100.x.x.x או שם שמסתיים ב-ts.net)."
             return
         }
         do {
             let health = try await client.health()
             if health.claude {
                 message = "מחובר. Claude זמין במק."
-                await analysisQueue.processPending()
+                store.requeueUnauthorized()
+                analysisQueue.kick()
             } else {
                 message = BridgeError.claudeUnavailable.messageHe
             }

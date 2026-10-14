@@ -166,4 +166,36 @@ final class AnalysisQueueTests: XCTestCase {
         XCTAssertEqual(status(first), .needsReview)
         XCTAssertEqual(status(try XCTUnwrap(added)), .failed(.missingPhoto))
     }
+
+    func test_cancellation_keeps_meal_pending_without_error() async throws {
+        let entry = try addPending()
+        client.analyzeResults = [.success(egg)]
+        var caller: Task<Void, Never>?
+        client.onAnalyze = { caller?.cancel() }
+        caller = Task { await queue.processPending() }
+        await caller?.value
+        XCTAssertEqual(status(entry), .pending)
+        XCTAssertNil(queue.lastError)
+    }
+
+    func test_kick_run_survives_cancelled_caller() async throws {
+        let entry = try addPending()
+        client.analyzeResults = [.success(egg)]
+        let queue = queue!
+        let caller = Task { await queue.kick().value }
+        caller.cancel()
+        await caller.value
+        XCTAssertEqual(status(entry), .needsReview)
+        XCTAssertEqual(client.analyzeCalls, 1)
+    }
+
+    func test_kick_is_noop_while_running() async throws {
+        try addPending()
+        client.analyzeResults = [.success(egg), .success(egg)]
+        let first = queue.kick()
+        let second = queue.kick()
+        XCTAssertEqual(first, second)
+        await first.value
+        XCTAssertEqual(client.analyzeCalls, 1)
+    }
 }

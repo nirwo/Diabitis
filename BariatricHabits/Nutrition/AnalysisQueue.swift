@@ -9,12 +9,27 @@ final class AnalysisQueue: ObservableObject {
     private let store: AppStore
     private let photos: PhotoStore
     private let makeClient: @MainActor () -> BridgeClienting?
+    /// Owned by the queue, not by a view, so leaving a screen never cancels a running analysis.
+    private var runTask: Task<Void, Never>?
 
     init(store: AppStore, photos: PhotoStore, makeClient: @escaping @MainActor () -> BridgeClienting?) {
         self.store = store
         self.photos = photos
         self.makeClient = makeClient
         store.resetStaleAnalyses()
+    }
+
+    /// Starts processing in a task the queue owns; a no-op while a run is in progress.
+    /// Returns the running task so callers such as pull-to-refresh can await it.
+    @discardableResult
+    func kick() -> Task<Void, Never> {
+        if let runTask { return runTask }
+        let task = Task { [weak self] in
+            await self?.processPending()
+            self?.runTask = nil
+        }
+        runTask = task
+        return task
     }
 
     func processPending() async {

@@ -9,7 +9,8 @@ final class ProteinCalculatorTests: XCTestCase {
 
     private lazy var library = FoodLibrary(
         sources: [source("milk", 8.4, .liquid), source("cottage", 11), source("turkey", 18.1),
-                  source("cod", 18.2), source("chicken", 18.6), source("beef", 17.5, .regular)],
+                  source("cod", 18.2), source("chicken", 18.6), source("beef", 17.5, .regular),
+                  source("tuna", 29), source("steak", 45, .regular)],
         recipes: [], rules: [])
 
     private func entry(_ protein: Double, _ status: FoodEntryStatus) -> FoodEntry {
@@ -37,7 +38,8 @@ final class ProteinCalculatorTests: XCTestCase {
 
     func test_suggestions_target_caps_at_one_meal() {
         let first = ProteinCalculator.suggestions(remaining: 90, stage: .regular, library: library, eatenNames: []).first
-        XCTAssertEqual(first?.id, "chicken", "closest to 30 g, not to 90 g")
+        // Without the 30 g cap the target would be 90 g and "steak" (45 g) would win.
+        XCTAssertEqual(first?.id, "tuna", "closest to 30 g, not to 90 g")
     }
 
     func test_suggestions_respect_stage() {

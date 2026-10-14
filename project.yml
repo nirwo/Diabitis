@@ -12,6 +12,8 @@ targets:
     info:
       path: BariatricHabits/Info.plist
       properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
           NSExceptionDomains:

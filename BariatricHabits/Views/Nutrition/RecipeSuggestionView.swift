@@ -11,10 +11,14 @@ struct RecipeSuggestionView: View {
         ProteinCalculator.remaining(goal: store.state.settings.proteinGoalGrams, entries: store.today.foodEntries)
     }
 
+    /// Without a known stage, assume soft food so Claude never suggests late-stage foods by default.
+    private var requestStage: DietStage { store.dietStage() ?? .soft }
+    private var stageText: String { store.dietStage()?.title ?? "לא הוגדר (מניח מזון רך)" }
+
     var body: some View {
         Form {
             Section {
-                Text("נשארו היום \(formatGrams(remaining)) גר' חלבון · שלב: \((store.dietStage() ?? .regular).title)")
+                Text("נשארו היום \(formatGrams(remaining)) גר' חלבון · שלב: \(stageText)")
                 TextField("מה יש בבית? (מופרד בפסיקים)", text: $haveText)
                 Button {
                     Task { await ask() }
@@ -55,7 +59,7 @@ struct RecipeSuggestionView: View {
             .filter { !$0.isEmpty }.prefix(20).map { String($0.prefix(40)) }
         do {
             suggestion = try await client.recipe(RecipeRequest(remainingG: min(remaining, 300),
-                                                               stage: store.dietStage() ?? .regular,
+                                                               stage: requestStage,
                                                                have: Array(have)))
             message = nil
         } catch {

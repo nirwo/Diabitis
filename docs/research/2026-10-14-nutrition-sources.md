@@ -16,6 +16,7 @@ This file is the source of truth for `nutrition-library.json`.
 | G6 | Collagen not recommended (incomplete amino acids); whey isolate is an option | https://www.templehealth.org/services/bariatric-surgery/patient-support/diet-nutrition/protein |
 | G7 | Eliminate concentrated sweets after bypass (dumping) | ASMBS PDF (G1), stated for RYGB |
 | G8 | Red meat is the most frequently problematic food | https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12525933/ |
+| G9 | Lactose malabsorption rose 17.9% → 29.8% after RYGB without a proportional rise in clinically confirmed lactose intolerance; dairy intolerance 11.6% vs 4.4% in controls. App wording: "some patients" develop dairy sensitivity; lactose-free or whey isolate if uncomfortable | https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12525933/ (verified by the final reviewer 2026-10-14) |
 
 Sources disagree on: daily target (60–80 vs 60–120 vs ≥90 for OAGB), stage timing, fluid timing (after only vs before+after), meal count (3 vs 4–6 vs 6).
 

@@ -5,6 +5,7 @@ struct MealReviewView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var entry: FoodEntry
     @State private var showingLibraryPicker = false
+    @State private var photo: UIImage?
     private let photos = PhotoStore()
 
     init(entry: FoodEntry) {
@@ -18,9 +19,9 @@ struct MealReviewView: View {
     var body: some View {
         NavigationStack {
             Form {
-                if let name = entry.photoFileName, let image = photos.image(for: name) {
+                if let photo {
                     Section {
-                        Image(uiImage: image).resizable().scaledToFit().frame(maxHeight: 220)
+                        Image(uiImage: photo).resizable().scaledToFit().frame(maxHeight: 220)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                             .accessibilityLabel("תמונת הארוחה")
                     }
@@ -41,6 +42,9 @@ struct MealReviewView: View {
                 if let notes = entry.notes, !notes.isEmpty {
                     Section("הערה מהזיהוי") { Text(notes) }
                 }
+            }
+            .task {
+                if let name = entry.photoFileName { photo = photos.image(for: name) }
             }
             .navigationTitle(entry.slotName ?? "ארוחה")
             .navigationBarTitleDisplayMode(.inline)

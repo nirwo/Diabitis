@@ -41,4 +41,21 @@ final class PhotoStoreTests: XCTestCase {
     func test_missing_file_returns_nil() {
         XCTAssertNil(store.data(for: "nope.jpg"))
     }
+
+    func test_thumbnail_is_downscaled_to_max_pixel() throws {
+        let name = try store.save(image(width: 800, height: 600))
+        let thumb = try XCTUnwrap(store.thumbnail(for: name, maxPixel: 100))
+        XCTAssertLessThanOrEqual(max(thumb.size.width * thumb.scale, thumb.size.height * thumb.scale), 100)
+    }
+
+    func test_thumbnail_missing_file_returns_nil() {
+        XCTAssertNil(store.thumbnail(for: "nope.jpg"))
+    }
+
+    func test_thumbnail_returns_nil_after_delete() throws {
+        let name = try store.save(image(width: 400, height: 300))
+        XCTAssertNotNil(store.thumbnail(for: name))
+        store.delete(name)
+        XCTAssertNil(store.thumbnail(for: name))
+    }
 }

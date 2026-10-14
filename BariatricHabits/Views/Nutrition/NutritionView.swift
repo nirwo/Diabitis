@@ -30,8 +30,9 @@ struct NutritionView: View {
                             .buttonStyle(.plain)
                     }
                     .onDelete { offsets in
-                        for index in offsets {
-                            if let photo = store.deleteFoodEntry(id: todaysEntries[index].id) { photos.delete(photo) }
+                        let ids = offsets.map { todaysEntries[$0].id }
+                        for id in ids {
+                            if let photo = store.deleteFoodEntry(id: id) { photos.delete(photo) }
                         }
                     }
                 }
@@ -83,7 +84,7 @@ struct NutritionView: View {
         Section {
             HStack {
                 if analysisQueue.isRunning { ProgressView() }
-                Text(analysisQueue.isRunning ? "מזהה ארוחות במק…" : "\(waitingCount) ארוחות ממתינות לזיהוי")
+                Text(analysisQueue.isRunning ? "מזהה ארוחות במק…" : (waitingCount == 1 ? "ארוחה אחת ממתינה לזיהוי" : "\(waitingCount) ארוחות ממתינות לזיהוי"))
                 Spacer()
                 if !analysisQueue.isRunning {
                     Button("נסה עכשיו") { Task { await analysisQueue.processPending() } }
@@ -127,7 +128,7 @@ struct FoodEntryRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Group {
-                if let name = entry.photoFileName, let image = photos.image(for: name) {
+                if let name = entry.photoFileName, let image = photos.thumbnail(for: name) {
                     Image(uiImage: image).resizable().scaledToFill()
                 } else {
                     Image(systemName: "fork.knife").foregroundStyle(.secondary)

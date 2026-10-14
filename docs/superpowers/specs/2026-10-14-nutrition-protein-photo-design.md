@@ -73,14 +73,15 @@ iPhone (SwiftUI)                                   Mac
 - כל בקשה דורשת `Authorization: Bearer <token>`; השוואה ב-`hmac.compare_digest`. בלי טוקן → 401.
 - מגבלות: תמונה ≤ 8MB, בקשה אחת במקביל ל-`claude` (תור פנימי), timeout 120s לתהליך.
 - `/analyze`: שומר את התמונה לקובץ זמני, מריץ
-  `claude -p "<prompt>" --output-format json --allowedTools Read` עם נתיב הקובץ, מוחק את הקובץ בסיום.
+  `claude -p "<prompt>" --output-format json --tools Read --allowedTools Read --strict-mcp-config --setting-sources project --add-dir <tmp>`
+  (cwd = תיקייה זמנית; בלי MCP, בלי hooks/plugins של המשתמש; לא `--bare` כי הוא מבטל את התחברות המנוי), ומוחק את התיקייה בסיום.
   ה-prompt קבוע בקוד ודורש JSON בסכמה:
   `{"items":[{"name":"…","grams":0,"protein_g":0,"confidence":"low|medium|high"}],"notes":"…"}`.
   השרת מאמת את הסכמה לפני ההחזרה; כשלון → 502 עם קוד `BAD_MODEL_OUTPUT`.
 - `/recipe`: גוף `{remaining_g, stage, have:[…]}` → מתכון אחד בסכמה קבועה, מסומן באפליקציה "הצעת AI — לא נבדק".
 - `/health`: `{status:"ok", claude:true|false}`.
 - `install.sh`: יוצר טוקן אקראי (32 bytes) ב-`~/.config/bariatric-bridge/token` (הרשאות 600),
-  מתקין LaunchAgent, ומדפיס QR/טקסט עם כתובת Tailscale + טוקן להזנה באייפון.
+  מתקין LaunchAgent, מדפיס את כתובת Tailscale ומעתיק את הטוקן ללוח (Universal Clipboard → הדבקה באייפון). בלי QR — חוסך תלות.
 - לוגים ל-`~/Library/Logs/bariatric-bridge.log` — בלי תמונות ובלי הטוקן.
 
 ### 3.4 רשת ואבטחה
@@ -94,9 +95,10 @@ iPhone (SwiftUI)                                   Mac
 ## 4. תוכן — ספריית תזונה
 
 קובץ `BariatricHabits/Resources/nutrition-library.json`:
-- `proteinSources[]`: `nameHe`, `servingText`, `servingGrams`, `proteinPerServing`, `proteinPer100g`, `stages[]`, `toleranceNote`, `sourceURL`, `verified`.
-- `recipes[]`: `nameHe`, `ingredients[]`, `steps[]`, `proteinPerPortion`, `portions`, `stage`, `warnings[]`, `sourceURL`, `verified`.
-- `rules[]`: `textHe`, `sourceURL`.
+- `sources[]`: `id`, `nameHe`, `servingText`, `servingGrams`, `proteinPerServing`, `proteinPer100g`, `minStage` (השלב המוקדם ביותר שהפריט מתאים לו), `note`, `sourceURL`.
+- `recipes[]`: `id`, `nameHe`, `ingredients[]`, `proteinPerPortion`, `portionText`, `minStage`, `warnings[]`, `sourceURL`. שלבי ההכנה המלאים — בקישור למקור (לא הועתקו כדי לא להמציא).
+- `rules[]`: `id`, `textHe`, `sourceURL`.
+- כל הפריטים בקובץ עברו אימות; אין שדה `verified` לכל פריט — מוצג סימון כללי.
 
 **מקורות — אומתו (41/41 נבדקו, 40 אושרו, 1 עם תיקון ניסוח, 0 נפסלו):** ראו
 [`docs/research/2026-10-14-nutrition-sources.md`](../../research/2026-10-14-nutrition-sources.md) — זה מקור האמת לנתוני ה-JSON.

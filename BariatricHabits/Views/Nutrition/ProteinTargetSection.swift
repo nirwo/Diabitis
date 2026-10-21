@@ -5,6 +5,9 @@ struct ProteinTargetSection: View {
     @EnvironmentObject private var store: AppStore
     @State private var heightText: String
     @State private var weightText: String
+    @FocusState private var focus: MeasurementField?
+
+    private enum MeasurementField: Hashable { case height, weight }
 
     private static let heightRange = 120.0...220.0
     private static let weightRange = 35.0...300.0
@@ -51,13 +54,8 @@ struct ProteinTargetSection: View {
     }
 
     @ViewBuilder private var automaticRows: some View {
-        measurementRow(title: "גובה (ס\"מ)", text: $heightText, range: Self.heightRange) { value in
-            store.state.settings.proteinTarget.heightCm = value
-        }
-        measurementRow(title: "משקל (ק\"ג)", text: $weightText, range: Self.weightRange) { value in
-            store.state.settings.proteinTarget.weightKg = value
-            store.state.settings.proteinTarget.weightUpdated = Date()
-        }
+        measurementRow(.height, title: "גובה (ס\"מ)", text: $heightText, range: Self.heightRange)
+        measurementRow(.weight, title: "משקל (ק\"ג)", text: $weightText, range: Self.weightRange)
         Picker("בסיס", selection: target.basis) {
             Text("משקל מתוקנן").tag(ProteinWeightBasis.adjusted)
             Text("משקל אידיאלי").tag(ProteinWeightBasis.ideal)
@@ -77,28 +75,45 @@ struct ProteinTargetSection: View {
             .accessibilityLabel(resultText)
     }
 
-    private func measurementRow(title: String, text: Binding<String>, range: ClosedRange<Double>,
-                                apply: @escaping (Double) -> Void) -> some View {
+    private func measurementRow(_ field: MeasurementField, title: String, text: Binding<String>,
+                                range: ClosedRange<Double>) -> some View {
         HStack {
             Text(title)
             TextField(title, text: text)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
+                .focused($focus, equals: field)
+                // While typing, only values already in range are stored; partial input like "1" is ignored.
                 .onChange(of: text.wrappedValue) { _, newText in
-                    guard let value = parseDecimal(newText) else { return }
-                    apply(min(max(value, range.lowerBound), range.upperBound))
+                    guard let value = parseDecimal(newText), range.contains(value) else { return }
+                    store(value, for: field)
                 }
         }
-        .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidEndEditingNotification)) { _ in
-            normalize()
+        .onChange(of: focus) { oldFocus, newFocus in
+            if oldFocus == field && newFocus != field { commit(field, text: text, range: range) }
         }
     }
 
-    /// Shows the stored, clamped values once editing ends.
-    private func normalize() {
-        let stored = store.state.settings.proteinTarget
-        heightText = stored.heightCm.map(formatGrams) ?? ""
-        weightText = stored.weightKg.map(formatGrams) ?? ""
+    /// On focus loss: clamp, store once, and show the stored value (an empty or invalid field restores it).
+    private func commit(_ field: MeasurementField, text: Binding<String>, range: ClosedRange<Double>) {
+        if let value = parseDecimal(text.wrappedValue) {
+            store(min(max(value, range.lowerBound), range.upperBound), for: field)
+        }
+        let stored = field == .height ? store.state.settings.proteinTarget.heightCm
+                                      : store.state.settings.proteinTarget.weightKg
+        text.wrappedValue = stored.map(formatGrams) ?? ""
+    }
+
+    private func store(_ value: Double, for field: MeasurementField) {
+        switch field {
+        case .height:
+            guard value != store.state.settings.proteinTarget.heightCm else { return }
+            store.state.settings.proteinTarget.heightCm = value
+        case .weight:
+            guard value != store.state.settings.proteinTarget.weightKg else { return }
+            store.state.settings.proteinTarget.weightKg = value
+            store.state.settings.proteinTarget.weightUpdated = Date()
+        }
     }
 
     private var resultText: String {

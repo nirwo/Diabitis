@@ -10,8 +10,8 @@ struct MealSlot: Codable, Identifiable, Hashable {
     var minutesOfDay: Int { hour * 60 + minute }
     var timeText: String { String(format: "%02d:%02d", hour, minute) }
 
-    func date(on day: Date) -> Date {
-        Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
+    func date(on day: Date, calendar: Calendar = .current) -> Date {
+        calendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
     }
 }
 

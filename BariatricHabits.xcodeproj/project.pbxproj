@@ -18,6 +18,7 @@
 		23406683E1EAC73D58FD7287 /* VitaminsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89468AAED101A7D84A44A157 /* VitaminsView.swift */; };
 		2352255640D280A2AB2BA5C3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F53AFCA44F0818D6C82DEF2 /* ContentView.swift */; };
 		270C4BBDA67433F4F8EEF246 /* PhotoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8931213B8594F070AEAC5B5 /* PhotoStore.swift */; };
+		282585AF7BF3CF82D81536FD /* DayHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E47E9EC45AB93AB5F07F30 /* DayHistory.swift */; };
 		2F0B5A3BBD69E18EFD09AFB8 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCED643C61333E07C04A1181 /* KeychainStore.swift */; };
 		3F0B3DE9CC30599A0D7844DD /* ProteinTargetSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC47E23C284BD21E11917F0 /* ProteinTargetSection.swift */; };
 		42EB3154E52D697287FBACFD /* StateDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6E4CCBF8A640F265C6A1D4 /* StateDecodingTests.swift */; };
@@ -43,6 +44,7 @@
 		B53BCB8F4F00E666B6C54614 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2BD35A8C334998034C082248 /* Assets.xcassets */; };
 		CE38F7F5E69889242E68D313 /* AnalysisQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6179284FE25799FC39B88C5 /* AnalysisQueue.swift */; };
 		D94F31F2578CB8FB476FA59E /* BariatricHabitsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */; };
+		DF2B74B6C4006948612FCE41 /* DayHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7764B38D6AD0881257A9DBA /* DayHistoryTests.swift */; };
 		E1080EE7EDB49BE9F04B5C06 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D125F3BBADAB406303A7672 /* AppStore.swift */; };
 		E549FC637A790052D36FBA19 /* BridgeSettingsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05271AF3B96016D83959AFF2 /* BridgeSettingsSection.swift */; };
 		E6B0B5DF7D7FDCB9395BB899 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F39C4DB3208D065BAEFACE81 /* CameraPicker.swift */; };
@@ -95,6 +97,7 @@
 		7F53AFCA44F0818D6C82DEF2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		867708C30C6119381941249A /* BridgeClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BridgeClient.swift; sourceTree = "<group>"; };
 		89468AAED101A7D84A44A157 /* VitaminsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitaminsView.swift; sourceTree = "<group>"; };
+		89E47E9EC45AB93AB5F07F30 /* DayHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayHistory.swift; sourceTree = "<group>"; };
 		89FFF63C6A570A54F470BAA4 /* FoodItemEditingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItemEditingTests.swift; sourceTree = "<group>"; };
 		90196E941FD2566162ECF803 /* AnalysisQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisQueueTests.swift; sourceTree = "<group>"; };
 		976FAEA850201BC9EAEE9813 /* NutritionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionView.swift; sourceTree = "<group>"; };
@@ -112,6 +115,7 @@
 		E3487505D9A6A737EC6FD868 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		E8931213B8594F070AEAC5B5 /* PhotoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStore.swift; sourceTree = "<group>"; };
 		F39C4DB3208D065BAEFACE81 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
+		F7764B38D6AD0881257A9DBA /* DayHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayHistoryTests.swift; sourceTree = "<group>"; };
 		F90A8657557BB061A28B9B48 /* BariatricHabitsTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BariatricHabitsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -121,6 +125,7 @@
 			children = (
 				A6179284FE25799FC39B88C5 /* AnalysisQueue.swift */,
 				3E065599F79B3EFE19965999 /* AppStore+Food.swift */,
+				89E47E9EC45AB93AB5F07F30 /* DayHistory.swift */,
 				5B0793BDD64FB828A3E23A18 /* DietStage.swift */,
 				19A96F90C4A907B1EC4C60B0 /* FoodLibrary.swift */,
 				2C4E5943BA4482D8C5B86016 /* FoodModels.swift */,
@@ -222,6 +227,7 @@
 				90196E941FD2566162ECF803 /* AnalysisQueueTests.swift */,
 				994180134D4BB3729F25F76B /* BridgeClientTests.swift */,
 				CCCE0B2D2C69FD4FAA6CBD62 /* CookingNoteTests.swift */,
+				F7764B38D6AD0881257A9DBA /* DayHistoryTests.swift */,
 				191B406267237C31F5289397 /* DietStageTests.swift */,
 				02793D7E91A0FBBA45FCEBF5 /* FoodEntryStoreTests.swift */,
 				89FFF63C6A570A54F470BAA4 /* FoodItemEditingTests.swift */,
@@ -327,6 +333,7 @@
 				45849C227BA6D6AF41451DE0 /* AnalysisQueueTests.swift in Sources */,
 				56A82ED7949D4E0BEDAB2CE8 /* BridgeClientTests.swift in Sources */,
 				22C5D3334F17F0261923E901 /* CookingNoteTests.swift in Sources */,
+				DF2B74B6C4006948612FCE41 /* DayHistoryTests.swift in Sources */,
 				AA8F8247B4658D231E204CCC /* DietStageTests.swift in Sources */,
 				6B7DF8B88366478BCD0342BB /* FoodEntryStoreTests.swift in Sources */,
 				B12EA13B0E2ADF973D0A6989 /* FoodItemEditingTests.swift in Sources */,
@@ -352,6 +359,7 @@
 				E6B0B5DF7D7FDCB9395BB899 /* CameraPicker.swift in Sources */,
 				2352255640D280A2AB2BA5C3 /* ContentView.swift in Sources */,
 				8EFD8C2FBDF29C2AC456A6EB /* CookingNoteSheet.swift in Sources */,
+				282585AF7BF3CF82D81536FD /* DayHistory.swift in Sources */,
 				128700B4B1852384A1D219FD /* DietStage.swift in Sources */,
 				FA82F006104C69D527256CC0 /* FoodLibrary.swift in Sources */,
 				818CE9BA590B200C9388DB67 /* FoodModels.swift in Sources */,

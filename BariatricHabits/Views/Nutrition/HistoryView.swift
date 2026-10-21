@@ -32,7 +32,6 @@ struct HistoryView: View {
             Section {
                 weekStrip
                 DatePicker("קפיצה לתאריך", selection: $selectedDay, in: ...Date(), displayedComponents: .date)
-                    .environment(\.locale, Locale(identifier: "he_IL"))
             }
             let summary = summary
             Section { summaryCard(summary) }
@@ -114,11 +113,20 @@ struct HistoryView: View {
     private func rowView(_ row: DayTimelineRow) -> some View {
         switch row {
         case .meal(let entry):
-            Button { reviewing = entry } label: { mealRow(entry) }
+            Button { reviewing = entry } label: { mealRow(entry).contentShape(Rectangle()) }
                 .buttonStyle(.plain)
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) { delete(entry) } label: {
+                        Label("מחיקה", systemImage: "trash")
+                    }
+                }
         case .planned(let slot, let state):
             plannedRow(slot, state)
         }
+    }
+
+    private func delete(_ entry: FoodEntry) {
+        if let photo = store.deleteFoodEntry(id: entry.id) { photos.delete(photo) }
     }
 
     private func mealRow(_ entry: FoodEntry) -> some View {

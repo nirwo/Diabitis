@@ -35,16 +35,17 @@ enum DayHistory {
         let isToday = calendar.isDate(date, inSameDayAs: now)
         let isPast = !isToday && date < now
         let entries = log.foodEntries
-        let entrySlotNames = Set(entries.filter { calendar.isDate($0.date, inSameDayAs: date) }.compactMap(\.slotName))
+        let matchedSlotIDs = matchEntries(entries, to: slots, on: date, calendar: calendar)
 
         var timed: [(time: Date, row: DayTimelineRow)] = entries.map { ($0.date, .meal($0)) }
         var eatenSlots = 0
         for slot in slots {
-            let isEaten = log.completedSlots.contains(slot.id) || entrySlotNames.contains(slot.name)
+            let isMatched = matchedSlotIDs.contains(slot.id)
+            let isEaten = log.completedSlots.contains(slot.id) || isMatched
             if isEaten { eatenSlots += 1 }
             let slotTime = slot.date(on: date, calendar: calendar)
             // Eaten slots are already represented by their meal rows, unless only ticked off.
-            if isEaten && entrySlotNames.contains(slot.name) { continue }
+            if isMatched { continue }
             let state = plannedState(isEaten: isEaten, isPast: isPast, isToday: isToday,
                                      slotTime: slotTime, now: now, calendar: calendar)
             timed.append((slotTime, .planned(slot, state)))
@@ -60,6 +61,25 @@ enum DayHistory {
                           goal: useSnapshot ? log.proteinGoalGrams! : currentGoal,
                           isGoalSnapshot: useSnapshot,
                           eatenSlots: eatenSlots, plannedSlots: slots.count, rows: rows)
+    }
+
+    /// Each same-day entry claims at most one slot: the nearest unclaimed slot with its name (ties go to the earlier slot).
+    private static func matchEntries(_ entries: [FoodEntry], to slots: [MealSlot], on date: Date,
+                                     calendar: Calendar) -> Set<UUID> {
+        var claimed = Set<UUID>()
+        let dayEntries = entries.filter { calendar.isDate($0.date, inSameDayAs: date) }
+        for entry in dayEntries.sorted(by: { $0.date < $1.date }) {
+            let nearest = slots
+                .filter { $0.name == entry.slotName && !claimed.contains($0.id) }
+                .map { (slot: $0, time: $0.date(on: date, calendar: calendar)) }
+                .min { lhs, rhs in
+                    let lhsGap = abs(lhs.time.timeIntervalSince(entry.date))
+                    let rhsGap = abs(rhs.time.timeIntervalSince(entry.date))
+                    return lhsGap != rhsGap ? lhsGap < rhsGap : lhs.time < rhs.time
+                }
+            if let nearest { claimed.insert(nearest.slot.id) }
+        }
+        return claimed
     }
 
     private static func plannedState(isEaten: Bool, isPast: Bool, isToday: Bool,

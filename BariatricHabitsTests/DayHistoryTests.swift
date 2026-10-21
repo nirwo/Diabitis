@@ -84,4 +84,31 @@ final class DayHistoryTests: XCTestCase {
         let result = summary(log: DayLog(foodEntries: [confirmed, review]), now: time(21, 15))
         XCTAssertEqual(result.proteinG, 20)
     }
+
+    func test_single_entry_claims_only_nearest_same_name_slot() {
+        let early = MealSlot(name: "ביניים", hour: 10, minute: 30, isMain: false)
+        let late = MealSlot(name: "ביניים", hour: 16, minute: 0, isMain: false)
+        let meal = entry(at: time(21, 10, 40), slot: "ביניים")
+        let result = DayHistory.summary(for: time(21, 0), log: DayLog(foodEntries: [meal]), slots: [early, late],
+                                        currentGoal: 112, now: time(21, 18), calendar: calendar)
+        XCTAssertEqual(result.rows, [.meal(meal), .planned(late, .skipped)])
+        XCTAssertEqual(result.eatenSlots, 1)
+        XCTAssertEqual(result.plannedSlots, 2)
+    }
+
+    func test_two_entries_claim_both_same_name_slots() {
+        let early = MealSlot(name: "ביניים", hour: 10, minute: 30, isMain: false)
+        let late = MealSlot(name: "ביניים", hour: 16, minute: 0, isMain: false)
+        let first = entry(at: time(21, 10, 40), slot: "ביניים")
+        let second = entry(at: time(21, 16, 5), slot: "ביניים")
+        let result = DayHistory.summary(for: time(21, 0), log: DayLog(foodEntries: [second, first]), slots: [early, late],
+                                        currentGoal: 112, now: time(21, 18), calendar: calendar)
+        XCTAssertEqual(result.rows, [.meal(first), .meal(second)])
+        XCTAssertEqual(result.eatenSlots, 2)
+    }
+
+    func test_slot_is_skipped_exactly_sixty_minutes_after_its_time() {
+        let result = summary(log: DayLog(), now: time(21, 14))
+        XCTAssertTrue(result.rows.contains(.planned(lunch, .skipped)))
+    }
 }

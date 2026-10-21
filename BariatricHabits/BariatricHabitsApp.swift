@@ -20,6 +20,7 @@ struct BariatricHabitsApp: App {
     init() {
         UNUserNotificationCenter.current().delegate = Self.notificationDelegate
         let store = AppStore()
+        store.backfillGoalSnapshots()
         _store = StateObject(wrappedValue: store)
         _analysisQueue = StateObject(wrappedValue: AnalysisQueue(
             store: store, photos: PhotoStore(),

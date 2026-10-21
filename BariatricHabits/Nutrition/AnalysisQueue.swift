@@ -90,13 +90,16 @@ final class AnalysisQueue: ObservableObject {
 
     private static let maxContextGrams = 1000
 
-    /// Protein already confirmed on the meal's own day (not counting the meal itself) and the goal, clamped to the bridge's range.
+    /// Protein already confirmed on the meal's own day (not counting the meal itself) and that day's goal,
+    /// clamped to the bridge's range.
     private func context(for entry: FoodEntry) -> AnalysisContext {
-        let others = store.log(for: entry.date).foodEntries.filter { $0.id != entry.id }
+        let log = store.log(for: entry.date)
+        let others = log.foodEntries.filter { $0.id != entry.id }
         let eaten = Int(ProteinCalculator.total(others).rounded())
+        let goal = log.proteinGoalGrams ?? store.proteinGoal
         return AnalysisContext(stage: store.dietStage(now: entry.date),
                                proteinEatenG: min(max(eaten, 0), Self.maxContextGrams),
-                               proteinGoalG: min(max(store.proteinGoal, 0), Self.maxContextGrams))
+                               proteinGoalG: min(max(goal, 0), Self.maxContextGrams))
     }
 
     /// A late result must never overwrite a meal the user confirmed or edited meanwhile.

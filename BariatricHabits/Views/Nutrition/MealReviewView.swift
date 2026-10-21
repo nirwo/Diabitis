@@ -6,6 +6,8 @@ struct MealReviewView: View {
     @EnvironmentObject private var analysisQueue: AnalysisQueue
     @Environment(\.dismiss) private var dismiss
     @State private var entry: FoodEntry
+    /// The copy as last loaded; differing from `entry` means the user has edited the form.
+    @State private var loadedEntry: FoodEntry
     @State private var cookingDraft: CookingNoteDraft
     @State private var showingLibraryPicker = false
     @State private var photo: UIImage?
@@ -13,6 +15,7 @@ struct MealReviewView: View {
 
     init(entry: FoodEntry) {
         _entry = State(initialValue: entry)
+        _loadedEntry = State(initialValue: entry)
         _cookingDraft = State(initialValue: CookingNoteDraft(note: entry.cookingNote))
     }
 
@@ -78,6 +81,12 @@ struct MealReviewView: View {
             .task {
                 if let name = entry.photoFileName { photo = photos.image(for: name) }
             }
+            // Analysis that lands while the form is untouched fills the editor in place.
+            .onChange(of: liveEntry) { _, live in
+                guard let adopted = entry.adoptingAnalysis(from: live, isEdited: entry != loadedEntry) else { return }
+                entry = adopted
+                loadedEntry = adopted
+            }
             .navigationTitle(entry.slotName ?? "ארוחה")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -118,6 +127,7 @@ struct MealReviewView: View {
 
     /// A saved entry always counts toward the goal: photo entries become confirmed, others manual.
     private func save() {
+        entry = entry.merging(liveAnalysisFrom: liveEntry)
         entry.cookingNote = cookingDraft.note
         entry.status = entry.photoFileName == nil ? .manual : .confirmed
         store.upsertFoodEntry(entry)

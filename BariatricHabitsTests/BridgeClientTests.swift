@@ -82,6 +82,17 @@ final class BridgeClientTests: XCTestCase {
         XCTAssertEqual(headers?["X-Protein-Goal"], "112")
     }
 
+    func test_analyze_sends_unknown_stage_when_stage_is_nil() async throws {
+        var headers: [String: String]?
+        StubURLProtocol.handler = { request in
+            headers = request.allHTTPHeaderFields
+            return (200, Data(#"{"items":[],"notes":""}"#.utf8))
+        }
+        let context = AnalysisContext(stage: nil, proteinEatenG: 0, proteinGoalG: 100)
+        _ = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: nil, context: context)
+        XCTAssertEqual(headers?["X-Diet-Stage"], "unknown")
+    }
+
     func test_analysis_result_without_advice_decodes() throws {
         let result = try JSONDecoder().decode(AnalysisResult.self, from: Data(#"{"items":[],"notes":""}"#.utf8))
         XCTAssertEqual(result.advice, [])

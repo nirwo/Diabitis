@@ -41,7 +41,7 @@ struct ProteinTargetSection: View {
             }
         } footer: {
             if store.state.settings.proteinTarget.mode == .automatic {
-                Text("הנוסחה לבדיקת הדיאטנית. מקור: ASMBS (עד 1.5 גר'/ק\"ג ממשקל אידיאלי), ERAS (לפחות 90 גר' אחרי מעקף).")
+                Text("הנוסחה לבדיקת הדיאטנית. מקור: ASMBS (עד 1.5 גר'/ק\"ג ממשקל אידיאלי), ERAS (לפחות 90 גר' אחרי מעקף). מקדם התיקון (0.25 / 0.4) הוא מוסכמה קלינית, לא מתוך הנחיה בריאטרית.")
             }
         }
         .onChange(of: store.state.settings.proteinTarget) { _, _ in store.refreshTodayGoalSnapshot() }
@@ -73,6 +73,12 @@ struct ProteinTargetSection: View {
         Text(resultText)
             .font(.subheadline.bold())
             .accessibilityLabel(resultText)
+        // Until the profile is complete the manual goal is the one in use; say so.
+        if ProteinTarget.calculate(store.state.settings.proteinTarget) == nil {
+            Text("עד אז: יעד ידני \(store.state.settings.proteinGoalGrams) גר'")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
     }
 
     private func measurementRow(_ field: MeasurementField, title: String, text: Binding<String>,

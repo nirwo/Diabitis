@@ -96,6 +96,27 @@ final class AnalysisQueueTests: XCTestCase {
         XCTAssertEqual(client.contexts.first??.proteinEatenG, 20)
     }
 
+    func test_context_goal_uses_the_meal_days_snapshot() async throws {
+        store.state.settings.proteinGoalGrams = 100
+        let past = Date().addingTimeInterval(-86400 * 3)
+        store.state.days[AppStore.key(for: past)] = DayLog(proteinGoalGrams: 80)
+        let name = try photos.save(UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).image { _ in })
+        store.upsertFoodEntry(FoodEntry(date: past, photoFileName: name, status: .pending))
+        client.analyzeResults = [.success(egg)]
+        await queue.processPending()
+        XCTAssertEqual(client.contexts.first??.proteinGoalG, 80)
+    }
+
+    func test_context_goal_falls_back_to_current_goal_without_snapshot() async throws {
+        store.state.settings.proteinGoalGrams = 100
+        let past = Date().addingTimeInterval(-86400 * 3)
+        let name = try photos.save(UIGraphicsImageRenderer(size: CGSize(width: 4, height: 4)).image { _ in })
+        store.upsertFoodEntry(FoodEntry(date: past, photoFileName: name, status: .pending))
+        client.analyzeResults = [.success(egg)]
+        await queue.processPending()
+        XCTAssertEqual(client.contexts.first??.proteinGoalG, 100)
+    }
+
     func test_cooking_note_is_sent_and_remembered_as_analyzed() async throws {
         let entry = try addPending(cookingNote: "מטוגן בשמן")
         client.analyzeResults = [.success(egg)]

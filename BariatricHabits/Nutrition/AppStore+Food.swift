@@ -27,6 +27,20 @@ extension AppStore {
         state.days[key] = log
     }
 
+    /// One-time migration: past days with meals but no goal snapshot get the manual goal, which was
+    /// the goal in effect before snapshots existed. Never overwrites a snapshot; one state mutation.
+    func backfillGoalSnapshots(now: Date = Date()) {
+        guard !state.settings.didBackfillGoalSnapshots else { return }
+        var newState = state
+        let todayKey = Self.key(for: now)
+        for (key, log) in newState.days
+        where key < todayKey && !log.foodEntries.isEmpty && log.proteinGoalGrams == nil {
+            newState.days[key]?.proteinGoalGrams = newState.settings.proteinGoalGrams
+        }
+        newState.settings.didBackfillGoalSnapshots = true
+        state = newState
+    }
+
     func dietStage(now: Date = Date()) -> DietStage? {
         state.settings.dietStageOverride ?? DietStage.from(surgeryDate: state.settings.surgeryDate, now: now)
     }

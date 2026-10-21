@@ -100,4 +100,31 @@ struct FoodEntry: Codable, Identifiable, Hashable {
     var advice: [String]? = nil
 
     var proteinG: Double { items.reduce(0) { $0 + $1.proteinG } }
+
+    /// Still waiting for, or in, analysis on the Mac.
+    var isAwaitingAnalysis: Bool { status == .pending || status == .analyzing }
+
+    /// Save-time merge for a copy taken before the analysis landed: analysis fields the copy lacks
+    /// come from the live entry, so saving never erases them. Items the user entered win.
+    func merging(liveAnalysisFrom live: FoodEntry) -> FoodEntry {
+        var merged = self
+        if merged.advice?.isEmpty ?? true, let advice = live.advice, !advice.isEmpty { merged.advice = advice }
+        if merged.notes?.isEmpty ?? true, let notes = live.notes, !notes.isEmpty { merged.notes = notes }
+        if merged.analyzedCookingNote == nil { merged.analyzedCookingNote = live.analyzedCookingNote }
+        if merged.items.isEmpty && !live.items.isEmpty { merged.items = live.items }
+        return merged
+    }
+
+    /// The copy with the arrived analysis, when this copy was still waiting, the live entry has
+    /// just been analyzed, and the user has not touched the form. Otherwise nil.
+    func adoptingAnalysis(from live: FoodEntry, isEdited: Bool) -> FoodEntry? {
+        guard !isEdited, isAwaitingAnalysis, live.status == .needsReview else { return nil }
+        var adopted = self
+        adopted.items = live.items
+        adopted.notes = live.notes
+        adopted.advice = live.advice
+        adopted.status = live.status
+        adopted.analyzedCookingNote = live.analyzedCookingNote
+        return adopted
+    }
 }

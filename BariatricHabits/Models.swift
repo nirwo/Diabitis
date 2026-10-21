@@ -69,6 +69,8 @@ struct AppSettings: Codable, Hashable {
     var proteinTarget = ProteinTargetSettings()
     var dietStageOverride: DietStage?
     var bridgeURL: String?
+    /// Set once past days got the goal snapshot they were missing (see `backfillGoalSnapshots`).
+    var didBackfillGoalSnapshots = false
 }
 
 struct DayLog: Codable, Hashable {
@@ -166,6 +168,8 @@ extension AppSettings {
         proteinTarget = try c.decodeIfPresent(ProteinTargetSettings.self, forKey: .proteinTarget) ?? d.proteinTarget
         dietStageOverride = try c.decodeIfPresent(DietStage.self, forKey: .dietStageOverride)
         bridgeURL = try c.decodeIfPresent(String.self, forKey: .bridgeURL)
+        didBackfillGoalSnapshots = try c.decodeIfPresent(Bool.self, forKey: .didBackfillGoalSnapshots)
+            ?? d.didBackfillGoalSnapshots
     }
 }
 

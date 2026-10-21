@@ -56,10 +56,14 @@ enum DayHistory {
             .sorted { ($0.element.time, $0.offset) < ($1.element.time, $1.offset) }
             .map(\.element.row)
 
-        let useSnapshot = !isToday && log.proteinGoalGrams != nil
+        var goal = currentGoal
+        var isGoalSnapshot = false
+        if !isToday, let snapshot = log.proteinGoalGrams {
+            goal = snapshot
+            isGoalSnapshot = true
+        }
         return DaySummary(date: date, proteinG: ProteinCalculator.total(entries),
-                          goal: useSnapshot ? log.proteinGoalGrams! : currentGoal,
-                          isGoalSnapshot: useSnapshot,
+                          goal: goal, isGoalSnapshot: isGoalSnapshot,
                           eatenSlots: eatenSlots, plannedSlots: slots.count, rows: rows)
     }
 

@@ -6,6 +6,8 @@ struct HistoryView: View {
     @EnvironmentObject private var analysisQueue: AnalysisQueue
     @State private var selectedDay = Calendar.current.startOfDay(for: Date())
     @State private var reviewing: FoodEntry?
+    /// A past meal is the dietitian's record: deleting it (and its photo) asks first.
+    @State private var pendingDeletion: FoodEntry?
     private let photos = PhotoStore()
     private let calendar = Calendar.current
     private static let daysPerWeek = 7
@@ -47,6 +49,13 @@ struct HistoryView: View {
         .onChange(of: selectedDay) { _, newValue in
             let day = calendar.startOfDay(for: newValue)
             if day != newValue { selectedDay = day }
+        }
+        .confirmationDialog("למחוק את הארוחה ואת התמונה?",
+                            isPresented: Binding(get: { pendingDeletion != nil },
+                                                 set: { if !$0 { pendingDeletion = nil } }),
+                            titleVisibility: .visible, presenting: pendingDeletion) { entry in
+            Button("מחיקה", role: .destructive) { delete(entry) }
+            Button("ביטול", role: .cancel) { pendingDeletion = nil }
         }
         .sheet(item: $reviewing) { entry in
             MealReviewView(entry: entry)
@@ -115,8 +124,8 @@ struct HistoryView: View {
         case .meal(let entry):
             Button { reviewing = entry } label: { mealRow(entry).contentShape(Rectangle()) }
                 .buttonStyle(.plain)
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button(role: .destructive) { delete(entry) } label: {
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button(role: .destructive) { pendingDeletion = entry } label: {
                         Label("מחיקה", systemImage: "trash")
                     }
                 }
@@ -126,6 +135,7 @@ struct HistoryView: View {
     }
 
     private func delete(_ entry: FoodEntry) {
+        pendingDeletion = nil
         if let photo = store.deleteFoodEntry(id: entry.id) { photos.delete(photo) }
     }
 

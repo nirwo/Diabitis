@@ -37,6 +37,10 @@ struct NutritionView: View {
                     }
                 }
                 Section {
+                    NavigationLink { HistoryView() } label: {
+                        Label("היסטוריה", systemImage: "calendar")
+                    }
+                    .accessibilityLabel("היסטוריה")
                     NavigationLink { LibraryView() } label: {
                         Label("מקורות חלבון, מתכונים וכללים", systemImage: "book.closed")
                     }

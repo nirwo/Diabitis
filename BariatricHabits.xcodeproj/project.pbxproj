@@ -47,6 +47,7 @@
 		D94F31F2578CB8FB476FA59E /* BariatricHabitsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */; };
 		DF2B74B6C4006948612FCE41 /* DayHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7764B38D6AD0881257A9DBA /* DayHistoryTests.swift */; };
 		E1080EE7EDB49BE9F04B5C06 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D125F3BBADAB406303A7672 /* AppStore.swift */; };
+		E4A773B385F9DF7AA692F944 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0DA7B37E0CD108B9E122166 /* HistoryView.swift */; };
 		E549FC637A790052D36FBA19 /* BridgeSettingsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05271AF3B96016D83959AFF2 /* BridgeSettingsSection.swift */; };
 		E5A6BE0B6D96114D85EFD98F /* MealPhotoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B5D52EF78574089B096F9A4 /* MealPhotoCapture.swift */; };
 		E6B0B5DF7D7FDCB9395BB899 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F39C4DB3208D065BAEFACE81 /* CameraPicker.swift */; };
@@ -116,6 +117,7 @@
 		C4B52EF6841A4E8FCECFFF08 /* AdviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdviceView.swift; sourceTree = "<group>"; };
 		C6F76F1E9B252C837037B28C /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		CCCE0B2D2C69FD4FAA6CBD62 /* CookingNoteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookingNoteTests.swift; sourceTree = "<group>"; };
+		E0DA7B37E0CD108B9E122166 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		E3487505D9A6A737EC6FD868 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		E8931213B8594F070AEAC5B5 /* PhotoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStore.swift; sourceTree = "<group>"; };
 		F39C4DB3208D065BAEFACE81 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
@@ -174,6 +176,7 @@
 				05271AF3B96016D83959AFF2 /* BridgeSettingsSection.swift */,
 				F39C4DB3208D065BAEFACE81 /* CameraPicker.swift */,
 				4A624AE47C8656A57B2F523A /* CookingNoteSheet.swift */,
+				E0DA7B37E0CD108B9E122166 /* HistoryView.swift */,
 				C6F76F1E9B252C837037B28C /* LibraryView.swift */,
 				2B5D52EF78574089B096F9A4 /* MealPhotoCapture.swift */,
 				553D2CC7052FFF6DEAE7DFE7 /* MealReviewView.swift */,
@@ -372,6 +375,7 @@
 				818CE9BA590B200C9388DB67 /* FoodModels.swift in Sources */,
 				0D43C071F118927CE0C96C26 /* GuidelinesView.swift in Sources */,
 				812EC6E636EEF4A44D02688E /* HealthManager.swift in Sources */,
+				E4A773B385F9DF7AA692F944 /* HistoryView.swift in Sources */,
 				2F0B5A3BBD69E18EFD09AFB8 /* KeychainStore.swift in Sources */,
 				02A5EA8148B02A477F3EA3ED /* LibraryView.swift in Sources */,
 				E5A6BE0B6D96114D85EFD98F /* MealPhotoCapture.swift in Sources */,

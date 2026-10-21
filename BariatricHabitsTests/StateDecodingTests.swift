@@ -4,7 +4,7 @@ import XCTest
 @MainActor
 final class StateDecodingTests: XCTestCase {
     /// JSON exactly as the shipped app (commit e11818b) writes it — no nutrition keys.
-    private let legacyJSON = """
+    let legacyJSON = """
     {"settings":{"mainMealMinutes":20,"snackMealMinutes":10,"chewSeconds":30,"drinkGapMinutes":30,
       "waterGoalML":2000,"stepGoal":7000,"hydrationReminders":false},
      "mealSlots":[],"vitamins":[],

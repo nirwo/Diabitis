@@ -87,7 +87,7 @@ struct TodayView: View {
     // MARK: - Protein
 
     private var proteinSection: some View {
-        let goal = store.state.settings.proteinGoalGrams
+        let goal = store.proteinGoal
         let eaten = Set(store.today.foodEntries.flatMap { $0.items.map(\.name) })
         let suggestions = ProteinCalculator.suggestions(remaining: Double(goal) - store.proteinToday,
                                                         stage: store.dietStage(),

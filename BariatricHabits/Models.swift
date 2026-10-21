@@ -66,6 +66,7 @@ struct AppSettings: Codable, Hashable {
     var stepGoal = 6000
     var hydrationReminders = true
     var proteinGoalGrams = 100
+    var proteinTarget = ProteinTargetSettings()
     var dietStageOverride: DietStage?
     var bridgeURL: String?
 }
@@ -77,6 +78,8 @@ struct DayLog: Codable, Hashable {
     var waterML = 0
     var habits: Set<String> = []
     var foodEntries: [FoodEntry] = []
+    /// The effective protein goal when the day was last touched; history keeps the goal of its day.
+    var proteinGoalGrams: Int?
 }
 
 struct AppState: Codable {
@@ -160,6 +163,7 @@ extension AppSettings {
         stepGoal = try c.decodeIfPresent(Int.self, forKey: .stepGoal) ?? d.stepGoal
         hydrationReminders = try c.decodeIfPresent(Bool.self, forKey: .hydrationReminders) ?? d.hydrationReminders
         proteinGoalGrams = try c.decodeIfPresent(Int.self, forKey: .proteinGoalGrams) ?? d.proteinGoalGrams
+        proteinTarget = try c.decodeIfPresent(ProteinTargetSettings.self, forKey: .proteinTarget) ?? d.proteinTarget
         dietStageOverride = try c.decodeIfPresent(DietStage.self, forKey: .dietStageOverride)
         bridgeURL = try c.decodeIfPresent(String.self, forKey: .bridgeURL)
     }
@@ -174,6 +178,7 @@ extension DayLog {
         waterML = try c.decodeIfPresent(Int.self, forKey: .waterML) ?? 0
         habits = try c.decodeIfPresent(Set<String>.self, forKey: .habits) ?? []
         foodEntries = try c.decodeIfPresent([FoodEntry].self, forKey: .foodEntries) ?? []
+        proteinGoalGrams = try c.decodeIfPresent(Int.self, forKey: .proteinGoalGrams)
     }
 }
 

@@ -24,7 +24,7 @@ struct NutritionView: View {
         NavigationStack {
             List {
                 Section {
-                    ProteinProgressView(total: store.proteinToday, goal: store.state.settings.proteinGoalGrams)
+                    ProteinProgressView(total: store.proteinToday, goal: store.proteinGoal)
                 }
                 if waitingCount > 0 || analysisQueue.isRunning { queueSection }
                 if !attentionEntries.isEmpty { attentionSection }

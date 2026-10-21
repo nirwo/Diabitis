@@ -3,6 +3,25 @@ import Foundation
 extension AppStore {
     var proteinToday: Double { ProteinCalculator.total(today.foodEntries) }
 
+    /// Calculated target when automatic and the profile is complete, else the manual goal.
+    var proteinGoal: Int {
+        let settings = state.settings
+        if settings.proteinTarget.mode == .automatic,
+           let result = ProteinTarget.calculate(settings.proteinTarget) {
+            return result.grams
+        }
+        return settings.proteinGoalGrams
+    }
+
+    /// Stores today's effective goal on today's log; writes only when it changed.
+    func refreshTodayGoalSnapshot() {
+        let key = Self.key(for: Date())
+        var log = state.days[key] ?? DayLog()
+        guard log.proteinGoalGrams != proteinGoal else { return }
+        log.proteinGoalGrams = proteinGoal
+        state.days[key] = log
+    }
+
     func dietStage(now: Date = Date()) -> DietStage? {
         state.settings.dietStageOverride ?? DietStage.from(surgeryDate: state.settings.surgeryDate, now: now)
     }
@@ -43,6 +62,7 @@ extension AppStore {
             days[newKey] = log
         }
         state.days = days
+        if newKey == Self.key(for: Date()) { refreshTodayGoalSnapshot() }
     }
 
     @discardableResult

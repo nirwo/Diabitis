@@ -8,7 +8,7 @@ struct RecipeSuggestionView: View {
     @State private var isLoading = false
 
     private var remaining: Double {
-        ProteinCalculator.remaining(goal: store.state.settings.proteinGoalGrams, entries: store.today.foodEntries)
+        ProteinCalculator.remaining(goal: store.proteinGoal, entries: store.today.foodEntries)
     }
 
     /// Without a known stage, assume soft food so Claude never suggests late-stage foods by default.

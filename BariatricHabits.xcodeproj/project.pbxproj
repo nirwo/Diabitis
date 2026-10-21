@@ -19,6 +19,7 @@
 		2352255640D280A2AB2BA5C3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F53AFCA44F0818D6C82DEF2 /* ContentView.swift */; };
 		270C4BBDA67433F4F8EEF246 /* PhotoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8931213B8594F070AEAC5B5 /* PhotoStore.swift */; };
 		2F0B5A3BBD69E18EFD09AFB8 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCED643C61333E07C04A1181 /* KeychainStore.swift */; };
+		3F0B3DE9CC30599A0D7844DD /* ProteinTargetSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC47E23C284BD21E11917F0 /* ProteinTargetSection.swift */; };
 		42EB3154E52D697287FBACFD /* StateDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6E4CCBF8A640F265C6A1D4 /* StateDecodingTests.swift */; };
 		45849C227BA6D6AF41451DE0 /* AnalysisQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90196E941FD2566162ECF803 /* AnalysisQueueTests.swift */; };
 		49141BC4FAC7041BE11F07B2 /* ProteinTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340A09316CEB573EB3A8DDE3 /* ProteinTarget.swift */; };
@@ -76,6 +77,7 @@
 		2A823CD7D9156706E9FEE976 /* ProteinTargetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinTargetTests.swift; sourceTree = "<group>"; };
 		2BD35A8C334998034C082248 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C4E5943BA4482D8C5B86016 /* FoodModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodModels.swift; sourceTree = "<group>"; };
+		2DC47E23C284BD21E11917F0 /* ProteinTargetSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinTargetSection.swift; sourceTree = "<group>"; };
 		340A09316CEB573EB3A8DDE3 /* ProteinTarget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinTarget.swift; sourceTree = "<group>"; };
 		3824D6FF0B9BCF07D6811729 /* ProteinCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinCalculator.swift; sourceTree = "<group>"; };
 		3B7263433EA888D434835033 /* FoodLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLibraryTests.swift; sourceTree = "<group>"; };
@@ -166,6 +168,7 @@
 				553D2CC7052FFF6DEAE7DFE7 /* MealReviewView.swift */,
 				976FAEA850201BC9EAEE9813 /* NutritionView.swift */,
 				4FB020474230D9402AE3D99A /* ProteinProgressView.swift */,
+				2DC47E23C284BD21E11917F0 /* ProteinTargetSection.swift */,
 				1B47A4A7D4D61DC3F29513D4 /* RecipeSuggestionView.swift */,
 			);
 			path = Nutrition;
@@ -366,6 +369,7 @@
 				7C831D968BFBBA8D800EF4A2 /* ProteinCalculator.swift in Sources */,
 				16D3F781D3AC86A36B17C2B4 /* ProteinProgressView.swift in Sources */,
 				49141BC4FAC7041BE11F07B2 /* ProteinTarget.swift in Sources */,
+				3F0B3DE9CC30599A0D7844DD /* ProteinTargetSection.swift in Sources */,
 				1F189D3BF16886DC617246B5 /* RecipeSuggestionView.swift in Sources */,
 				FAF6CEF95BB821FCCCE7538A /* SettingsView.swift in Sources */,
 				4C5CEBA0B5AB48FF31234E92 /* TodayView.swift in Sources */,

@@ -30,9 +30,9 @@ struct SettingsView: View {
                     }
                 }
 
+                ProteinTargetSection(initial: store.state.settings.proteinTarget)
+
                 Section("תזונה") {
-                    Stepper("יעד חלבון: \(store.state.settings.proteinGoalGrams) גר'",
-                            value: $store.state.settings.proteinGoalGrams, in: 60...160, step: 5)
                     Picker("שלב תזונה", selection: $store.state.settings.dietStageOverride) {
                         Text("אוטומטי לפי תאריך הניתוח").tag(DietStage?.none)
                         ForEach(DietStage.allCases) { stage in
@@ -111,6 +111,14 @@ struct SettingsView: View {
             .navigationTitle("הגדרות")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("סיום") { dismiss() } }
+                // The decimal pad has no return key.
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("סיום") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
+                                                        to: nil, from: nil, for: nil)
+                    }
+                }
             }
             .sheet(item: $editingSlot) { slot in
                 MealSlotEditor(slot: slot) { saved in

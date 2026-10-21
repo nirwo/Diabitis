@@ -7,9 +7,31 @@ struct AnalyzedItem: Codable, Equatable {
     var confidence: FoodConfidence
 }
 
+/// What the Mac needs to tailor improvement tips: diet stage and today's protein progress.
+struct AnalysisContext: Equatable {
+    var stage: DietStage?
+    var proteinEatenG: Int
+    var proteinGoalG: Int
+}
+
 struct AnalysisResult: Codable, Equatable {
     var items: [AnalyzedItem]
     var notes: String
+    var advice: [String]
+
+    init(items: [AnalyzedItem], notes: String, advice: [String] = []) {
+        self.items = items
+        self.notes = notes
+        self.advice = advice
+    }
+
+    /// Older bridges reply without `advice`.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        items = try container.decode([AnalyzedItem].self, forKey: .items)
+        notes = try container.decode(String.self, forKey: .notes)
+        advice = try container.decodeIfPresent([String].self, forKey: .advice) ?? []
+    }
 }
 
 struct RecipeRequest: Codable, Equatable {
@@ -48,7 +70,7 @@ enum BridgeError: Error, Equatable {
 }
 
 protocol BridgeClienting {
-    func analyze(jpeg: Data, cookingNote: String?) async throws -> AnalysisResult
+    func analyze(jpeg: Data, cookingNote: String?, context: AnalysisContext?) async throws -> AnalysisResult
     func recipe(_ request: RecipeRequest) async throws -> RecipeSuggestion
     func health() async throws -> BridgeHealth
 }
@@ -75,11 +97,16 @@ struct BridgeClient: BridgeClienting {
     private static let headerSafeCharacters = CharacterSet(
         charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
 
-    func analyze(jpeg: Data, cookingNote: String?) async throws -> AnalysisResult {
+    func analyze(jpeg: Data, cookingNote: String?, context: AnalysisContext?) async throws -> AnalysisResult {
         var request = makeRequest(path: "analyze", method: "POST", timeout: Self.analyzeTimeout)
         request.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
         if let cookingNote, let encoded = cookingNote.addingPercentEncoding(withAllowedCharacters: Self.headerSafeCharacters) {
             request.setValue(encoded, forHTTPHeaderField: "X-Cooking-Note")
+        }
+        if let context {
+            request.setValue(context.stage?.rawValue ?? "unknown", forHTTPHeaderField: "X-Diet-Stage")
+            request.setValue(String(context.proteinEatenG), forHTTPHeaderField: "X-Protein-Eaten")
+            request.setValue(String(context.proteinGoalG), forHTTPHeaderField: "X-Protein-Goal")
         }
         request.httpBody = jpeg
         return try await send(request)

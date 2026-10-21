@@ -58,13 +58,14 @@ final class AnalysisQueue: ObservableObject {
             store.updateFoodEntry(id: entry.id) { $0.status = .analyzing }
             do {
                 let cookingNote = entry.cookingNote
-                let result = try await client.analyze(jpeg: jpeg, cookingNote: cookingNote)
+                let result = try await client.analyze(jpeg: jpeg, cookingNote: cookingNote, context: context(for: entry))
                 store.updateFoodEntry(id: entry.id) {
                     guard $0.status == .analyzing else { return }
                     $0.items = result.items.map {
                         FoodItem(name: $0.name, grams: $0.grams, proteinG: $0.proteinG, confidence: $0.confidence).sanitized
                     }
                     $0.notes = result.notes.isEmpty ? nil : result.notes
+                    $0.advice = result.advice.isEmpty ? nil : result.advice
                     $0.analyzedCookingNote = cookingNote
                     $0.status = .needsReview
                 }
@@ -85,6 +86,17 @@ final class AnalysisQueue: ObservableObject {
                 return
             }
         }
+    }
+
+    private static let maxContextGrams = 1000
+
+    /// Protein already confirmed on the meal's own day (not counting the meal itself) and the goal, clamped to the bridge's range.
+    private func context(for entry: FoodEntry) -> AnalysisContext {
+        let others = store.log(for: entry.date).foodEntries.filter { $0.id != entry.id }
+        let eaten = Int(ProteinCalculator.total(others).rounded())
+        return AnalysisContext(stage: store.dietStage(now: entry.date),
+                               proteinEatenG: min(max(eaten, 0), Self.maxContextGrams),
+                               proteinGoalG: min(max(store.proteinGoal, 0), Self.maxContextGrams))
     }
 
     /// A late result must never overwrite a meal the user confirmed or edited meanwhile.

@@ -96,6 +96,8 @@ struct FoodEntry: Codable, Identifiable, Hashable {
     var cookingNote: String? = nil
     /// The cooking note the stored analysis was made with, to offer re-analysis after it changes.
     var analyzedCookingNote: String? = nil
+    /// Up to three AI improvement tips from the last analysis. Optional, so older saves still decode.
+    var advice: [String]? = nil
 
     var proteinG: Double { items.reduce(0) { $0 + $1.proteinG } }
 }

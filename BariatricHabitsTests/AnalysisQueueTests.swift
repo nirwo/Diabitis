@@ -8,8 +8,11 @@ final class FakeBridgeClient: BridgeClienting {
     private(set) var cookingNotes: [String?] = []
     var onAnalyze: (@MainActor () -> Void)?
 
-    func analyze(jpeg: Data, cookingNote: String?) async throws -> AnalysisResult {
+    private(set) var contexts: [AnalysisContext?] = []
+
+    func analyze(jpeg: Data, cookingNote: String?, context: AnalysisContext?) async throws -> AnalysisResult {
         analyzeCalls += 1
+        contexts.append(context)
         cookingNotes.append(cookingNote)
         await onAnalyze?()
         try await Task.sleep(nanoseconds: 10_000_000)
@@ -62,6 +65,35 @@ final class AnalysisQueueTests: XCTestCase {
         XCTAssertEqual(saved.items.first?.proteinG, 6.3)
         XCTAssertEqual(saved.notes, "נראה טעים")
         XCTAssertEqual(store.proteinToday, 0, "not counted until the user confirms")
+    }
+
+    func test_queue_stores_advice_and_sends_context() async throws {
+        let entry = try addPending()
+        client.analyzeResults = [.success(AnalysisResult(items: egg.items, notes: "", advice: ["א"]))]
+        await queue.processPending()
+        let saved = try XCTUnwrap(store.allFoodEntries.first { $0.id == entry.id })
+        XCTAssertEqual(saved.advice, ["א"])
+        XCTAssertEqual(client.contexts.first??.proteinGoalG, store.proteinGoal)
+        XCTAssertEqual(client.contexts.first??.proteinEatenG, 0)
+    }
+
+    func test_empty_advice_is_stored_as_nil() async throws {
+        let entry = try addPending()
+        client.analyzeResults = [.success(egg)]
+        await queue.processPending()
+        XCTAssertNil(store.allFoodEntries.first { $0.id == entry.id }?.advice)
+    }
+
+    func test_context_eaten_excludes_the_entry_itself_and_other_days() async throws {
+        let confirmed = FoodEntry(date: Date(), items: [FoodItem(name: "x", grams: 1, proteinG: 20, confidence: .high)], status: .confirmed)
+        let yesterday = FoodEntry(date: Date().addingTimeInterval(-86400 * 2),
+                                  items: [FoodItem(name: "y", grams: 1, proteinG: 50, confidence: .high)], status: .confirmed)
+        store.upsertFoodEntry(confirmed)
+        store.upsertFoodEntry(yesterday)
+        try addPending()
+        client.analyzeResults = [.success(egg)]
+        await queue.processPending()
+        XCTAssertEqual(client.contexts.first??.proteinEatenG, 20)
     }
 
     func test_cooking_note_is_sent_and_remembered_as_analyzed() async throws {

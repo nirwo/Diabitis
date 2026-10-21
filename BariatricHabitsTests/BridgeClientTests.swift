@@ -41,7 +41,7 @@ final class BridgeClientTests: XCTestCase {
             XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "image/jpeg")
             return (200, Data(#"{"items":[{"name":"ביצה","grams":50,"protein_g":6.3,"confidence":"high"}],"notes":""}"#.utf8))
         }
-        let result = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: nil)
+        let result = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: nil, context: nil)
         XCTAssertEqual(result.items, [AnalyzedItem(name: "ביצה", grams: 50, proteinG: 6.3, confidence: .high)])
     }
 
@@ -52,7 +52,7 @@ final class BridgeClientTests: XCTestCase {
             header = request.value(forHTTPHeaderField: "X-Cooking-Note")
             return (200, Data(#"{"items":[],"notes":""}"#.utf8))
         }
-        _ = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: note)
+        _ = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: note, context: nil)
         let sent = try XCTUnwrap(header)
         XCTAssertTrue(sent.allSatisfy(\.isASCII), "header values must be ASCII: \(sent)")
         XCTAssertEqual(sent.removingPercentEncoding, note)
@@ -64,9 +64,27 @@ final class BridgeClientTests: XCTestCase {
             headers = request.allHTTPHeaderFields
             return (200, Data(#"{"items":[],"notes":""}"#.utf8))
         }
-        _ = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: nil)
+        _ = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: nil, context: nil)
         XCTAssertNotNil(headers?["Authorization"])
         XCTAssertNil(headers?["X-Cooking-Note"])
+    }
+
+    func test_analyze_sends_context_headers() async throws {
+        var headers: [String: String]?
+        StubURLProtocol.handler = { request in
+            headers = request.allHTTPHeaderFields
+            return (200, Data(#"{"items":[],"notes":""}"#.utf8))
+        }
+        let context = AnalysisContext(stage: .soft, proteinEatenG: 40, proteinGoalG: 112)
+        _ = try await client.analyze(jpeg: Data([0xFF, 0xD8]), cookingNote: nil, context: context)
+        XCTAssertEqual(headers?["X-Diet-Stage"], "soft")
+        XCTAssertEqual(headers?["X-Protein-Eaten"], "40")
+        XCTAssertEqual(headers?["X-Protein-Goal"], "112")
+    }
+
+    func test_analysis_result_without_advice_decodes() throws {
+        let result = try JSONDecoder().decode(AnalysisResult.self, from: Data(#"{"items":[],"notes":""}"#.utf8))
+        XCTAssertEqual(result.advice, [])
     }
 
     func test_status_codes_map_to_errors() async {
@@ -92,7 +110,7 @@ final class BridgeClientTests: XCTestCase {
 
     func test_cancelled_request_maps_to_CancellationError() async {
         StubURLProtocol.handler = { _ in throw URLError(.cancelled) }
-        do { _ = try await client.analyze(jpeg: Data(), cookingNote: nil); XCTFail("expected error") } catch {
+        do { _ = try await client.analyze(jpeg: Data(), cookingNote: nil, context: nil); XCTFail("expected error") } catch {
             XCTAssertTrue(error is CancellationError, "got \(error)")
         }
     }
@@ -104,7 +122,7 @@ final class BridgeClientTests: XCTestCase {
             return (200, Data(#"{"status":"ok","claude":true}"#.utf8))
         }
         _ = try await client.health()
-        _ = try? await client.analyze(jpeg: Data(), cookingNote: nil)
+        _ = try? await client.analyze(jpeg: Data(), cookingNote: nil, context: nil)
         _ = try? await client.recipe(RecipeRequest(remainingG: 30, stage: .soft, have: []))
         XCTAssertEqual(timeouts["/health"], 10)
         XCTAssertEqual(timeouts["/analyze"], 150)
@@ -114,7 +132,7 @@ final class BridgeClientTests: XCTestCase {
 
     func test_undecodable_success_body_is_badModelOutput() async {
         StubURLProtocol.handler = { _ in (200, Data("nope".utf8)) }
-        do { _ = try await client.analyze(jpeg: Data(), cookingNote: nil); XCTFail("expected error") } catch {
+        do { _ = try await client.analyze(jpeg: Data(), cookingNote: nil, context: nil); XCTFail("expected error") } catch {
             XCTAssertEqual(error as? BridgeError, .badModelOutput)
         }
     }

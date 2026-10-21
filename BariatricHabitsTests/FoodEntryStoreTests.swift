@@ -31,6 +31,26 @@ final class FoodEntryStoreTests: XCTestCase {
         XCTAssertEqual(store.proteinToday, 11)
     }
 
+    func test_projected_protein_adds_a_meal_that_does_not_count_yet() {
+        let store = makeTestStore()
+        store.upsertFoodEntry(FoodEntry(date: Date(), items: [FoodItem(name: "קוטג'", grams: 100, proteinG: 14)],
+                                        status: .confirmed))
+        let pending = FoodEntry(date: Date(), items: [FoodItem(name: "עוף", grams: 80, proteinG: 24)],
+                                photoFileName: "a.jpg", status: .needsReview)
+        store.upsertFoodEntry(pending)
+        XCTAssertEqual(store.projectedProteinToday(with: pending), 38)
+    }
+
+    func test_projected_protein_does_not_double_count_a_confirmed_meal() {
+        let store = makeTestStore()
+        store.upsertFoodEntry(FoodEntry(date: Date(), items: [FoodItem(name: "קוטג'", grams: 100, proteinG: 14)],
+                                        status: .confirmed))
+        let confirmed = FoodEntry(date: Date(), items: [FoodItem(name: "עוף", grams: 80, proteinG: 24)],
+                                  photoFileName: "a.jpg", status: .confirmed)
+        store.upsertFoodEntry(confirmed)
+        XCTAssertEqual(store.projectedProteinToday(with: confirmed), 38)
+    }
+
     func test_upsert_sanitizes_item_values() {
         let store = makeTestStore()
         store.upsertFoodEntry(FoodEntry(date: Date(), items: [FoodItem(name: " x ", grams: -3, proteinG: 999)], status: .manual))

@@ -51,6 +51,8 @@ struct MealTimerView: View {
         .onReceive(ticker) { date in
             now = date
             signalMilestones()
+            // Deleted, or the day has moved on: the card's meal is no longer today's.
+            if mealEntryID != nil && mealEntry == nil { mealEntryID = nil }
         }
         .onAppear {
             if selectedSlotID == nil { selectedSlotID = store.suggestedSlot()?.id }
@@ -152,10 +154,11 @@ struct MealTimerView: View {
 
     // MARK: - Meal photo
 
-    /// Read from the store each time, so the card follows the analysis as it completes.
+    /// Read from today's log each time, so the card follows the analysis as it completes
+    /// and disappears once the meal is deleted or is no longer today's.
     private var mealEntry: FoodEntry? {
         guard let mealEntryID else { return nil }
-        return store.allFoodEntries.first { $0.id == mealEntryID }
+        return store.log(for: Date()).foodEntries.first { $0.id == mealEntryID }
     }
 
     private func mealCard(_ entry: FoodEntry) -> some View {
@@ -164,14 +167,17 @@ struct MealTimerView: View {
                 mealThumbnail(entry)
                 VStack(alignment: .leading, spacing: 6) {
                     Text(entry.slotName ?? "המנה שצילמת").font(.headline)
-                    if !entry.status.labelHe.isEmpty {
+                    if case .failed = entry.status {
+                        Label(entry.status.labelHe, systemImage: "exclamationmark.triangle.fill")
+                            .font(.subheadline).foregroundStyle(.orange)
+                    } else if !entry.status.labelHe.isEmpty {
                         Text(entry.status.labelHe).font(.subheadline).foregroundStyle(.orange)
                     }
                     ForEach(entry.items) { item in
                         Text("\(item.name) · \(formatGrams(item.grams)) גר'").font(.subheadline)
                     }
                     if !entry.items.isEmpty {
-                        Text("+\(formatGrams(entry.proteinG)) גר' → \(formatGrams(store.proteinToday))/\(store.proteinGoal) היום")
+                        Text("+\(formatGrams(entry.proteinG)) גר' → \(formatGrams(store.projectedProteinToday(with: entry)))/\(store.proteinGoal) היום")
                             .font(.subheadline.bold())
                     }
                     AdviceView(advice: entry.advice ?? [])

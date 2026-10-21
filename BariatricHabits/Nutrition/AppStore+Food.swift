@@ -3,6 +3,11 @@ import Foundation
 extension AppStore {
     var proteinToday: Double { ProteinCalculator.total(today.foodEntries) }
 
+    /// Today's protein once this meal counts; a meal that already counts is not added twice.
+    func projectedProteinToday(with entry: FoodEntry) -> Double {
+        proteinToday + (entry.status.countsTowardGoal ? 0 : entry.proteinG)
+    }
+
     /// Calculated target when automatic and the profile is complete, else the manual goal.
     var proteinGoal: Int {
         let settings = state.settings

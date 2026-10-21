@@ -61,7 +61,8 @@ ADVICE_RULES = (
     "for this patient. Consider: portion size for the stage (after surgery small portions, roughly "
     "60-200 g); protein first; for stages before regular suggest postponing red meat, legumes, "
     "rice/bread/pasta; flag added sugar and fried or fatty food; what to add to reach the protein goal; "
-    "before surgery frame tips as habits to practise. No medical diagnoses.")
+    "before surgery frame tips as habits to practise. If the stage is unknown, treat the patient as "
+    "before the regular stage (postpone red meat, legumes, rice/bread/pasta). No medical diagnoses.")
 
 RECIPE_PROMPT = """You are helping a patient after one-anastomosis gastric bypass (mini gastric bypass).
 Suggest ONE simple high-protein recipe, written in Hebrew.
@@ -187,8 +188,17 @@ def validate_analysis(obj):
 def _clean_advice(raw):
     if not isinstance(raw, list):
         return []
-    tips = [tip.strip()[:MAX_ADVICE_CHARS].strip() for tip in raw if isinstance(tip, str)]
+    tips = [_shorten(tip.strip()) for tip in raw if isinstance(tip, str)]
     return [tip for tip in tips if tip][:MAX_ADVICE_ITEMS]
+
+
+def _shorten(tip):
+    """Caps a tip at MAX_ADVICE_CHARS, cutting at the last space so no word is split."""
+    if len(tip) <= MAX_ADVICE_CHARS:
+        return tip
+    cut = tip[:MAX_ADVICE_CHARS + 1]
+    space = cut.rfind(" ")
+    return (cut[:space] if space > 0 else tip[:MAX_ADVICE_CHARS]).strip()
 
 
 def validate_recipe(obj):

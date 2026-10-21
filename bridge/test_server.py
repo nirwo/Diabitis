@@ -224,9 +224,24 @@ class BridgeServerTest(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertLessEqual(len(body["advice"]), 3)
         self.assertEqual(body["advice"][0], "טיפ")
-        self.assertEqual(body["advice"][1], "א" * 140)
+        self.assertEqual(body["advice"][1], "א" * 140, "no space: hard cut at the limit")
         for tip in body["advice"]:
             self.assertTrue(isinstance(tip, str) and 0 < len(tip) <= 140)
+
+    def test_long_advice_is_cut_at_the_last_space(self):
+        tip = "אבגדה " * 40  # 6 chars per word: char 140 falls mid-word
+        output = json.dumps({**VALID_ANALYSIS, "advice": [tip]}, ensure_ascii=False)
+        _, body, _ = self.analyze_with(output=output)
+        cut = body["advice"][0]
+        self.assertLessEqual(len(cut), 140)
+        self.assertTrue(cut.endswith("אבגדה"), cut)
+        self.assertEqual(cut, ("אבגדה " * 23).strip())
+
+    def test_unknown_stage_advice_is_conservative(self):
+        _, _, prompt = self.analyze_with()
+        self.assertIn("diet stage unknown.", prompt)
+        self.assertIn("If the stage is unknown, treat the patient as before the regular stage "
+                      "(postpone red meat, legumes, rice/bread/pasta).", prompt)
 
     def test_missing_advice_defaults_to_empty(self):
         _, body, _ = self.analyze_with()

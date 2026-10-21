@@ -182,11 +182,51 @@ class BridgeServerTest(unittest.TestCase):
 
     def test_no_cooking_note_leaves_prompt_unchanged(self):
         prompt, work_dir = self.analyze_prompt()
-        self.assertEqual(prompt, server.ANALYZE_PROMPT.format(path=os.path.join(work_dir, "meal.jpg")))
+        self.assertNotIn("how it was prepared", prompt)
+        self.assertTrue(prompt.startswith(server.ANALYZE_PROMPT.format(path=os.path.join(work_dir, "meal.jpg"))))
 
     def test_blank_cooking_note_leaves_prompt_unchanged(self):
         prompt, work_dir = self.analyze_prompt(" \n ")
-        self.assertEqual(prompt, server.ANALYZE_PROMPT.format(path=os.path.join(work_dir, "meal.jpg")))
+        self.assertNotIn("how it was prepared", prompt)
+        self.assertTrue(prompt.startswith(server.ANALYZE_PROMPT.format(path=os.path.join(work_dir, "meal.jpg"))))
+
+    def analyze_with(self, output=None, headers=None):
+        runner = FakeRunner(output=json.dumps(VALID_ANALYSIS) if output is None else output)
+        status, body = self.call(self.start(runner), "/analyze", data=b"x", headers=headers or {})
+        return status, body, runner.prompts[0]
+
+    def test_context_headers_reach_prompt(self):
+        _, _, prompt = self.analyze_with(headers={"X-Diet-Stage": "soft", "X-Protein-Eaten": "40",
+                                                  "X-Protein-Goal": "112"})
+        self.assertIn("soft", prompt)
+        self.assertIn("40", prompt)
+        self.assertIn("112", prompt)
+
+    def test_bad_context_headers_are_ignored(self):
+        _, _, prompt = self.analyze_with(headers={"X-Diet-Stage": "{x}", "X-Protein-Eaten": "-5",
+                                                  "X-Protein-Goal": "abc"})
+        self.assertIn("unknown", prompt)
+        self.assertNotIn("{x}", prompt)
+        self.assertNotIn("-5", prompt)
+
+    def test_advice_is_returned(self):
+        output = json.dumps({**VALID_ANALYSIS, "advice": ["להתחיל מהחלבון"]}, ensure_ascii=False)
+        _, body, _ = self.analyze_with(output=output)
+        self.assertEqual(body["advice"], ["להתחיל מהחלבון"])
+
+    def test_advice_is_trimmed_and_filtered(self):
+        advice = [5, "", "  טיפ  ", "א" * 2000, "ב", "ג", "ד", None, "ה", "ו"]
+        output = json.dumps({**VALID_ANALYSIS, "advice": advice}, ensure_ascii=False)
+        status, body, _ = self.analyze_with(output=output)
+        self.assertEqual(status, 200)
+        self.assertLessEqual(len(body["advice"]), 3)
+        self.assertEqual(body["advice"][0], "טיפ")
+        for tip in body["advice"]:
+            self.assertTrue(isinstance(tip, str) and 0 < len(tip) <= 140)
+
+    def test_missing_advice_defaults_to_empty(self):
+        _, body, _ = self.analyze_with()
+        self.assertEqual(body["advice"], [])
 
     def test_unknown_path_is_404(self):
         status, _ = self.call(self.start(FakeRunner()), "/nope")

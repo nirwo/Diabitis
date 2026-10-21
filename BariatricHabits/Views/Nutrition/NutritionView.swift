@@ -1,4 +1,3 @@
-import PhotosUI
 import SwiftUI
 
 struct NutritionView: View {
@@ -6,13 +5,7 @@ struct NutritionView: View {
     @EnvironmentObject private var analysisQueue: AnalysisQueue
     @State private var showingCamera = false
     @State private var showingPhotoPicker = false
-    @State private var pickedItem: PhotosPickerItem?
     @State private var reviewing: FoodEntry?
-    @State private var errorMessage: String?
-    /// A saved photo's meal, held back until the cooking-note sheet closes.
-    @State private var capturedEntry: FoodEntry?
-    @State private var chosenCookingNote: String?
-    @State private var askingCookingNote = false
     private let photos = PhotoStore()
 
     private var todaysEntries: [FoodEntry] { store.today.foodEntries.sorted { $0.date > $1.date } }
@@ -53,29 +46,14 @@ struct NutritionView: View {
             .toolbar { ToolbarItem(placement: .primaryAction) { addMenu } }
             .refreshable { await analysisQueue.kick().value }
             .task { analysisQueue.kick() }
-            // The camera sheet must be gone before the note sheet can be presented.
-            .sheet(isPresented: $showingCamera, onDismiss: { if capturedEntry != nil { askingCookingNote = true } }) {
-                CameraPicker { image in handleCaptured(image) }.ignoresSafeArea()
-            }
-            .photosPicker(isPresented: $showingPhotoPicker, selection: $pickedItem, matching: .images)
-            .onChange(of: pickedItem) { _, item in
-                guard let item else { return }
-                Task { await loadPicked(item) }
-            }
-            .sheet(isPresented: $askingCookingNote, onDismiss: finishCapture) {
-                CookingNoteSheet { chosenCookingNote = $0 }
-                    .environment(\.layoutDirection, .rightToLeft)
-            }
+            .mealPhotoCapture(isPresented: $showingCamera, slotName: store.suggestedSlot()?.name) { _ in }
+            .mealPhotoCapture(isPresented: $showingPhotoPicker, source: .library,
+                              slotName: store.suggestedSlot()?.name) { _ in }
             .sheet(item: $reviewing) { entry in
                 MealReviewView(entry: entry)
                     .environmentObject(store)
                     .environmentObject(analysisQueue)
                     .environment(\.layoutDirection, .rightToLeft)
-            }
-            .alert("שגיאה", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-                Button("אישור", role: .cancel) {}
-            } message: {
-                Text(errorMessage ?? "")
             }
         }
     }
@@ -125,41 +103,6 @@ struct NutritionView: View {
             Text("לאישור")
         } footer: {
             Text("ארוחות שמחכות לאישור, שהזיהוי שלהן נכשל, או שעדיין ממתינות מימים קודמים.")
-        }
-    }
-
-    private func handleCaptured(_ image: UIImage) {
-        do {
-            let fileName = try photos.save(image)
-            capturedEntry = FoodEntry(date: Date(), slotName: store.suggestedSlot()?.name,
-                                      photoFileName: fileName, status: .pending)
-            chosenCookingNote = nil
-            if !showingCamera { askingCookingNote = true }
-        } catch {
-            errorMessage = "לא הצלחנו לשמור את התמונה."
-        }
-    }
-
-    /// Runs for "המשך", "דלג" and a swipe-down alike (a swipe leaves the note nil).
-    private func finishCapture() {
-        guard var entry = capturedEntry else { return }
-        entry.cookingNote = chosenCookingNote
-        store.upsertFoodEntry(entry)
-        capturedEntry = nil
-        chosenCookingNote = nil
-        analysisQueue.kick()
-    }
-
-    private func loadPicked(_ item: PhotosPickerItem) async {
-        defer { pickedItem = nil }
-        do {
-            guard let data = try await item.loadTransferable(type: Data.self), let image = UIImage(data: data) else {
-                errorMessage = "לא הצלחנו לפתוח את התמונה."
-                return
-            }
-            handleCaptured(image)
-        } catch {
-            errorMessage = "לא הצלחנו לפתוח את התמונה."
         }
     }
 }

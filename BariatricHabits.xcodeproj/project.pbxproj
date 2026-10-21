@@ -26,6 +26,7 @@
 		49141BC4FAC7041BE11F07B2 /* ProteinTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340A09316CEB573EB3A8DDE3 /* ProteinTarget.swift */; };
 		4B5E484857093503FDCBC3B2 /* AppStore+Food.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E065599F79B3EFE19965999 /* AppStore+Food.swift */; };
 		4C5CEBA0B5AB48FF31234E92 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46CF7D82D576A149675A5412 /* TodayView.swift */; };
+		5494E03801637618382A1E6A /* AdviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4B52EF6841A4E8FCECFFF08 /* AdviceView.swift */; };
 		55533B519379F7745AC1E829 /* MealTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5647EC217428010511277B05 /* MealTimer.swift */; };
 		56A82ED7949D4E0BEDAB2CE8 /* BridgeClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 994180134D4BB3729F25F76B /* BridgeClientTests.swift */; };
 		6B7DF8B88366478BCD0342BB /* FoodEntryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02793D7E91A0FBBA45FCEBF5 /* FoodEntryStoreTests.swift */; };
@@ -47,6 +48,7 @@
 		DF2B74B6C4006948612FCE41 /* DayHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7764B38D6AD0881257A9DBA /* DayHistoryTests.swift */; };
 		E1080EE7EDB49BE9F04B5C06 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D125F3BBADAB406303A7672 /* AppStore.swift */; };
 		E549FC637A790052D36FBA19 /* BridgeSettingsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05271AF3B96016D83959AFF2 /* BridgeSettingsSection.swift */; };
+		E5A6BE0B6D96114D85EFD98F /* MealPhotoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B5D52EF78574089B096F9A4 /* MealPhotoCapture.swift */; };
 		E6B0B5DF7D7FDCB9395BB899 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F39C4DB3208D065BAEFACE81 /* CameraPicker.swift */; };
 		EA66ACF15F27354FF05017B6 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3487505D9A6A737EC6FD868 /* NotificationManager.swift */; };
 		F8AF33412D0499CB40D60973 /* ProteinCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7507C9242C9A3AE1ED4EA391 /* ProteinCalculatorTests.swift */; };
@@ -77,6 +79,7 @@
 		1D125F3BBADAB406303A7672 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
 		2939A4758707CA4DE5F2767C /* PhotoStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStoreTests.swift; sourceTree = "<group>"; };
 		2A823CD7D9156706E9FEE976 /* ProteinTargetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinTargetTests.swift; sourceTree = "<group>"; };
+		2B5D52EF78574089B096F9A4 /* MealPhotoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPhotoCapture.swift; sourceTree = "<group>"; };
 		2BD35A8C334998034C082248 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C4E5943BA4482D8C5B86016 /* FoodModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodModels.swift; sourceTree = "<group>"; };
 		2DC47E23C284BD21E11917F0 /* ProteinTargetSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinTargetSection.swift; sourceTree = "<group>"; };
@@ -110,6 +113,7 @@
 		BCED643C61333E07C04A1181 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
 		BD4D82D99ABA7B71EB090AF2 /* BariatricHabitsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BariatricHabitsApp.swift; sourceTree = "<group>"; };
 		BF39C5F297C84F0F767452EE /* BariatricHabits.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BariatricHabits.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C4B52EF6841A4E8FCECFFF08 /* AdviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdviceView.swift; sourceTree = "<group>"; };
 		C6F76F1E9B252C837037B28C /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		CCCE0B2D2C69FD4FAA6CBD62 /* CookingNoteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookingNoteTests.swift; sourceTree = "<group>"; };
 		E3487505D9A6A737EC6FD868 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
@@ -166,10 +170,12 @@
 		A36E3788CCE7AE052ADDDA79 /* Nutrition */ = {
 			isa = PBXGroup;
 			children = (
+				C4B52EF6841A4E8FCECFFF08 /* AdviceView.swift */,
 				05271AF3B96016D83959AFF2 /* BridgeSettingsSection.swift */,
 				F39C4DB3208D065BAEFACE81 /* CameraPicker.swift */,
 				4A624AE47C8656A57B2F523A /* CookingNoteSheet.swift */,
 				C6F76F1E9B252C837037B28C /* LibraryView.swift */,
+				2B5D52EF78574089B096F9A4 /* MealPhotoCapture.swift */,
 				553D2CC7052FFF6DEAE7DFE7 /* MealReviewView.swift */,
 				976FAEA850201BC9EAEE9813 /* NutritionView.swift */,
 				4FB020474230D9402AE3D99A /* ProteinProgressView.swift */,
@@ -350,6 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A750C744F2E63961FF62E490 /* ActivityView.swift in Sources */,
+				5494E03801637618382A1E6A /* AdviceView.swift in Sources */,
 				CE38F7F5E69889242E68D313 /* AnalysisQueue.swift in Sources */,
 				4B5E484857093503FDCBC3B2 /* AppStore+Food.swift in Sources */,
 				E1080EE7EDB49BE9F04B5C06 /* AppStore.swift in Sources */,
@@ -367,6 +374,7 @@
 				812EC6E636EEF4A44D02688E /* HealthManager.swift in Sources */,
 				2F0B5A3BBD69E18EFD09AFB8 /* KeychainStore.swift in Sources */,
 				02A5EA8148B02A477F3EA3ED /* LibraryView.swift in Sources */,
+				E5A6BE0B6D96114D85EFD98F /* MealPhotoCapture.swift in Sources */,
 				748F441242C3A273AFAF3800 /* MealReviewView.swift in Sources */,
 				55533B519379F7745AC1E829 /* MealTimer.swift in Sources */,
 				1DD4CD0C012A39D94A2750D4 /* MealTimerView.swift in Sources */,

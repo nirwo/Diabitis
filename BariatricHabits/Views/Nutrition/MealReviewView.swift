@@ -41,6 +41,10 @@ struct MealReviewView: View {
                     }
                 }
                 if let statusText { Section { Text(statusText).foregroundStyle(.secondary) } }
+                // Live, so tips that arrive while this screen is open still show.
+                if let advice = liveEntry.advice, !advice.isEmpty {
+                    Section { AdviceView(advice: advice) }
+                }
                 Section {
                     ForEach($entry.items) { $item in FoodItemEditor(item: $item) }
                         .onDelete { entry.items.remove(atOffsets: $0) }

@@ -20,6 +20,7 @@ struct MealSummary: Identifiable {
 struct MealTimerView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var timer: MealTimer
+    @EnvironmentObject private var analysisQueue: AnalysisQueue
 
     @State private var now = Date()
     @State private var selectedSlotID: UUID?
@@ -27,6 +28,11 @@ struct MealTimerView: View {
     @State private var chewDoneSignaled = true
     @State private var targetSignaled = false
     @State private var confirmCancel = false
+    @State private var showingMealCamera = false
+    /// The meal photographed from this tab; shown until the timer finishes or is cancelled.
+    @State private var mealEntryID: UUID?
+    @State private var reviewing: FoodEntry?
+    private let photos = PhotoStore()
 
     private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -50,9 +56,19 @@ struct MealTimerView: View {
             if selectedSlotID == nil { selectedSlotID = store.suggestedSlot()?.id }
             targetSignaled = timer.elapsed(at: Date()) >= Double(timer.targetMinutes * 60)
         }
+        .onChange(of: timer.isRunning) { wasRunning, isRunning in
+            if wasRunning && !isRunning { mealEntryID = nil }
+        }
         .sheet(item: $summary) { summary in
             MealSummaryView(summary: summary)
                 .presentationDetents([.medium])
+        }
+        .mealPhotoCapture(isPresented: $showingMealCamera, slotName: selectedSlot?.name) { mealEntryID = $0 }
+        .sheet(item: $reviewing) { entry in
+            MealReviewView(entry: entry)
+                .environmentObject(store)
+                .environmentObject(analysisQueue)
+                .environment(\.layoutDirection, .rightToLeft)
         }
     }
 
@@ -107,6 +123,17 @@ struct MealTimerView: View {
             .padding()
             .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
 
+            if let mealEntry { mealCard(mealEntry) }
+
+            Button {
+                showingMealCamera = true
+            } label: {
+                Label("צלם את המנה", systemImage: "camera")
+                    .font(.title3.bold()).frame(maxWidth: .infinity).padding(.vertical, 8)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.teal)
+
             Button {
                 timer.start(slot: selectedSlot, minutes: plannedMinutes)
                 targetSignaled = false
@@ -121,6 +148,55 @@ struct MealTimerView: View {
 
     private func checklistRow(_ text: String) -> some View {
         Label(text, systemImage: "checkmark.circle").foregroundStyle(.primary)
+    }
+
+    // MARK: - Meal photo
+
+    /// Read from the store each time, so the card follows the analysis as it completes.
+    private var mealEntry: FoodEntry? {
+        guard let mealEntryID else { return nil }
+        return store.allFoodEntries.first { $0.id == mealEntryID }
+    }
+
+    private func mealCard(_ entry: FoodEntry) -> some View {
+        Button { reviewing = entry } label: {
+            HStack(alignment: .top, spacing: 12) {
+                mealThumbnail(entry)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(entry.slotName ?? "המנה שצילמת").font(.headline)
+                    if !entry.status.labelHe.isEmpty {
+                        Text(entry.status.labelHe).font(.subheadline).foregroundStyle(.orange)
+                    }
+                    ForEach(entry.items) { item in
+                        Text("\(item.name) · \(formatGrams(item.grams)) גר'").font(.subheadline)
+                    }
+                    if !entry.items.isEmpty {
+                        Text("+\(formatGrams(entry.proteinG)) גר' → \(formatGrams(store.proteinToday))/\(store.proteinGoal) היום")
+                            .font(.subheadline.bold())
+                    }
+                    AdviceView(advice: entry.advice ?? [])
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding()
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+            .contentShape(RoundedRectangle(cornerRadius: 16))
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("פתיחת פרטי הארוחה")
+    }
+
+    private func mealThumbnail(_ entry: FoodEntry) -> some View {
+        Group {
+            if let name = entry.photoFileName, let image = photos.thumbnail(for: name) {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                Image(systemName: "fork.knife").foregroundStyle(.secondary)
+            }
+        }
+        .frame(width: 56, height: 56)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityHidden(true)
     }
 
     // MARK: - Running
@@ -204,6 +280,8 @@ struct MealTimerView: View {
                 .buttonStyle(.bordered)
                 .tint(.green)
             }
+
+            if let mealEntry { mealCard(mealEntry) }
         }
         .confirmationDialog("לבטל את הארוחה?", isPresented: $confirmCancel, titleVisibility: .visible) {
             Button("ביטול הארוחה בלי לשמור", role: .destructive) { timer.cancel() }

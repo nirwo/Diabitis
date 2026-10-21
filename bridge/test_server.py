@@ -198,16 +198,19 @@ class BridgeServerTest(unittest.TestCase):
     def test_context_headers_reach_prompt(self):
         _, _, prompt = self.analyze_with(headers={"X-Diet-Stage": "soft", "X-Protein-Eaten": "40",
                                                   "X-Protein-Goal": "112"})
-        self.assertIn("soft", prompt)
-        self.assertIn("40", prompt)
-        self.assertIn("112", prompt)
+        self.assertIn("diet stage soft; protein eaten today 40 of 112 g.", prompt)
 
     def test_bad_context_headers_are_ignored(self):
         _, _, prompt = self.analyze_with(headers={"X-Diet-Stage": "{x}", "X-Protein-Eaten": "-5",
                                                   "X-Protein-Goal": "abc"})
-        self.assertIn("unknown", prompt)
+        self.assertIn("diet stage unknown.", prompt)
         self.assertNotIn("{x}", prompt)
-        self.assertNotIn("-5", prompt)
+        self.assertNotIn("protein eaten today", prompt)
+        self.assertNotIn("daily protein goal", prompt)
+
+    def test_overlong_protein_header_is_ignored(self):
+        _, _, prompt = self.analyze_with(headers={"X-Protein-Goal": "9" * 5000})
+        self.assertIn("diet stage unknown.", prompt)
 
     def test_advice_is_returned(self):
         output = json.dumps({**VALID_ANALYSIS, "advice": ["להתחיל מהחלבון"]}, ensure_ascii=False)
@@ -221,6 +224,7 @@ class BridgeServerTest(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertLessEqual(len(body["advice"]), 3)
         self.assertEqual(body["advice"][0], "טיפ")
+        self.assertEqual(body["advice"][1], "א" * 140)
         for tip in body["advice"]:
             self.assertTrue(isinstance(tip, str) and 0 < len(tip) <= 140)
 

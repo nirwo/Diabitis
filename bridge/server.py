@@ -239,7 +239,7 @@ def clean_cooking_note(raw):
 
 
 def _protein_header(raw):
-    if raw is None or not raw.isascii() or not raw.isdigit():
+    if raw is None or len(raw) > len(str(MAX_PROTEIN_HEADER_G)) or not raw.isascii() or not raw.isdigit():
         return None
     value = int(raw)
     return value if value <= MAX_PROTEIN_HEADER_G else None

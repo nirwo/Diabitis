@@ -22,6 +22,7 @@ final class FakeBridgeClient: BridgeClienting {
 
     func recipe(_ request: RecipeRequest) async throws -> RecipeSuggestion { throw BridgeError.unreachable }
     func health() async throws -> BridgeHealth { BridgeHealth(status: "ok", claude: true) }
+    func selfTest() async throws {}
 }
 
 @MainActor
@@ -181,6 +182,13 @@ final class AnalysisQueueTests: XCTestCase {
         let unconfigured = AnalysisQueue(store: store, photos: photos, makeClient: { nil })
         await unconfigured.processPending()
         XCTAssertEqual(status(entry), .pending)
+        XCTAssertEqual(unconfigured.lastError, .notConfigured, "the user must be told why nothing happens")
+    }
+
+    func test_no_client_and_nothing_waiting_reports_no_error() async {
+        let unconfigured = AnalysisQueue(store: store, photos: photos, makeClient: { nil })
+        await unconfigured.processPending()
+        XCTAssertNil(unconfigured.lastError)
     }
 
     func test_user_edit_during_analysis_is_not_overwritten() async throws {

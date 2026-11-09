@@ -173,6 +173,10 @@ struct MealTimerView: View {
                     } else if !entry.status.labelHe.isEmpty {
                         Text(entry.status.labelHe).font(.subheadline).foregroundStyle(.orange)
                     }
+                    // Without this a meal just sits on "ממתין לזיהוי" with no hint why.
+                    if entry.status == .pending, !analysisQueue.isRunning, let error = analysisQueue.lastError {
+                        Text(error.messageHe).font(.footnote).foregroundStyle(.secondary)
+                    }
                     ForEach(entry.items) { item in
                         Text("\(item.name) · \(formatGrams(item.grams)) גר'").font(.subheadline)
                     }

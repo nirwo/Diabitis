@@ -112,6 +112,33 @@ final class BridgeClientTests: XCTestCase {
         }
     }
 
+    func test_selfTest_calls_selftest_with_token_and_long_timeout() async throws {
+        var seen: URLRequest?
+        StubURLProtocol.handler = { request in
+            seen = request
+            return (200, Data(#"{"status":"ok"}"#.utf8))
+        }
+        try await client.selfTest()
+        XCTAssertEqual(seen?.url?.path, "/selftest")
+        XCTAssertEqual(seen?.httpMethod, "GET")
+        XCTAssertEqual(seen?.value(forHTTPHeaderField: "Authorization"), "Bearer secret")
+        XCTAssertEqual(seen?.timeoutInterval, BridgeClient.selfTestTimeout)
+        XCTAssertGreaterThan(BridgeClient.selfTestTimeout, 60, "must exceed SELFTEST_TIMEOUT_SECONDS")
+    }
+
+    func test_selfTest_surfaces_claude_failure_and_old_bridge() async {
+        let cases: [(Int, BridgeError)] = [(503, .claudeUnavailable), (504, .timeout), (404, .server(404))]
+        for (status, expected) in cases {
+            StubURLProtocol.handler = { _ in (status, Data("{}".utf8)) }
+            do {
+                try await client.selfTest()
+                XCTFail("expected \(expected)")
+            } catch {
+                XCTAssertEqual(error as? BridgeError, expected)
+            }
+        }
+    }
+
     func test_network_failure_is_unreachable() async {
         StubURLProtocol.handler = { _ in throw URLError(.timedOut) }
         do { _ = try await client.health(); XCTFail("expected error") } catch {

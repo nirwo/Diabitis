@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import tempfile
 import threading
+import time
 import unicodedata
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -21,6 +22,10 @@ DEFAULT_PORT = 8787
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 MAX_JSON_BYTES = 16 * 1024
 CLAUDE_TIMEOUT_SECONDS = 120
+# A second attempt after a malformed answer only starts with at least this much of the budget left.
+RETRY_MIN_SECONDS = 30
+SELFTEST_TIMEOUT_SECONDS = 60
+SELFTEST_PROMPT = "Reply with the single word OK."
 MAX_ITEMS = 20
 MAX_GRAMS = 2000
 MAX_PROTEIN_G = 200
@@ -92,7 +97,7 @@ class ClaudeRunner:
     def is_available(self):
         return bool(self.claude_path) and os.access(self.claude_path, os.X_OK)
 
-    def run(self, prompt, work_dir, read_files=False):
+    def run(self, prompt, work_dir, read_files=False, timeout=None):
         """Run claude; with read_files=True it may Read only inside work_dir, else it has no tools."""
         command = [
             self.claude_path, "-p", prompt,
@@ -107,7 +112,7 @@ class ClaudeRunner:
         try:
             with self._lock:
                 completed = subprocess.run(command, cwd=work_dir, capture_output=True,
-                                           text=True, timeout=self.timeout)
+                                           text=True, timeout=timeout or self.timeout)
         except (FileNotFoundError, PermissionError) as err:
             raise ClaudeUnavailableError(f"cannot start claude: {err}") from err
         if completed.returncode != 0:
@@ -331,17 +336,15 @@ def make_handler(token, runner):
             return self.rfile.read(length)
 
         def do_GET(self):
-            if not self._authorized():
-                return
-            if self.path != "/health":
-                self._error(404, "NOT_FOUND", "unknown path")
-                return
-            self._send(200, {"status": "ok", "claude": runner.is_available()})
+            self._dispatch({"/health": self._health, "/selftest": self._selftest})
 
         def do_POST(self):
+            self._dispatch({"/analyze": self._analyze, "/recipe": self._recipe})
+
+        def _dispatch(self, routes):
             if not self._authorized():
                 return
-            route = {"/analyze": self._analyze, "/recipe": self._recipe}.get(self.path)
+            route = routes.get(self.path)
             if route is None:
                 self._error(404, "NOT_FOUND", "unknown path")
                 return
@@ -360,6 +363,29 @@ def make_handler(token, runner):
                 LOG.error("unexpected %s on %s", type(err).__name__, self.path)
                 self._error(500, "INTERNAL", "internal error")
 
+        def _health(self):
+            self._send(200, {"status": "ok", "claude": runner.is_available()})
+
+        def _selftest(self):
+            """Proves claude really answers (installed, logged in, within quota), unlike /health."""
+            with tempfile.TemporaryDirectory(prefix="bariatric-") as work_dir:
+                runner.run(SELFTEST_PROMPT, work_dir, timeout=SELFTEST_TIMEOUT_SECONDS)
+            self._send(200, {"status": "ok"})
+
+        def _ask(self, prompt, work_dir, validate, read_files=False):
+            """Runs claude and validates the answer. A malformed answer is asked for once more,
+            inside the same total time budget, so one stray reply does not fail the meal."""
+            deadline = time.monotonic() + runner.timeout
+            for attempt in (1, 2):
+                text = runner.run(prompt, work_dir, read_files=read_files,
+                                  timeout=max(1, deadline - time.monotonic()))
+                try:
+                    return validate(extract_json(text))
+                except ModelOutputError as err:
+                    if attempt == 2 or deadline - time.monotonic() < RETRY_MIN_SECONDS:
+                        raise
+                    LOG.warning("bad model output on %s, retrying once: %s", self.path, err)
+
         def _analyze(self):
             body = self._read_body(MAX_IMAGE_BYTES)
             if body is None:
@@ -369,8 +395,9 @@ def make_handler(token, runner):
                 with open(image_path, "wb") as image_file:
                     image_file.write(body)
                 note = clean_cooking_note(self.headers.get("X-Cooking-Note"))
-                text = runner.run(build_analyze_prompt(image_path, note, clean_context(self.headers)), work_dir, read_files=True)
-            self._send(200, validate_analysis(extract_json(text)))
+                prompt = build_analyze_prompt(image_path, note, clean_context(self.headers))
+                result = self._ask(prompt, work_dir, validate_analysis, read_files=True)
+            self._send(200, result)
 
         def _recipe(self):
             body = self._read_body(MAX_JSON_BYTES)
@@ -382,8 +409,8 @@ def make_handler(token, runner):
                 self._error(400, "BAD_REQUEST", str(err))
                 return
             with tempfile.TemporaryDirectory(prefix="bariatric-") as work_dir:
-                text = runner.run(build_recipe_prompt(request), work_dir)
-            self._send(200, validate_recipe(extract_json(text)))
+                result = self._ask(build_recipe_prompt(request), work_dir, validate_recipe)
+            self._send(200, result)
 
     return Handler
 

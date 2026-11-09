@@ -27,18 +27,24 @@ def tearDownModule():
 
 
 class FakeRunner:
-    def __init__(self, output="", error=None, available=True):
+    timeout = server.CLAUDE_TIMEOUT_SECONDS
+
+    def __init__(self, output="", error=None, available=True, outputs=None):
+        """`outputs` answers successive calls in order; `output` answers every call."""
         self.output, self.error, self.available = output, error, available
+        self.outputs = list(outputs or [])
         self.work_dirs = []
         self.prompts = []
+        self.timeouts = []
 
-    def run(self, prompt, work_dir, read_files=False):
+    def run(self, prompt, work_dir, read_files=False, timeout=None):
         self.read_files = read_files
         self.prompts.append(prompt)
         self.work_dirs.append(work_dir)
+        self.timeouts.append(timeout)
         if self.error:
             raise self.error
-        return self.output
+        return self.outputs.pop(0) if self.outputs else self.output
 
     def is_available(self):
         return self.available
@@ -247,6 +253,64 @@ class BridgeServerTest(unittest.TestCase):
         _, body, _ = self.analyze_with()
         self.assertEqual(body["advice"], [])
 
+    def test_bad_output_is_retried_once(self):
+        runner = FakeRunner(outputs=["sorry, I cannot", json.dumps(VALID_ANALYSIS)])
+        status, body = self.call(self.start(runner), "/analyze", data=b"\xff\xd8fake")
+        self.assertEqual((status, body["items"][0]["name"]), (200, "ביצה"))
+        self.assertEqual(len(runner.prompts), 2)
+        self.assertEqual(runner.work_dirs[0], runner.work_dirs[1], "the retry must still find the image")
+
+    def test_bad_output_twice_is_502_after_two_attempts(self):
+        runner = FakeRunner(output="still not json")
+        status, body = self.call(self.start(runner), "/analyze", data=b"\xff\xd8fake")
+        self.assertEqual((status, body["error"]["code"]), (502, "BAD_MODEL_OUTPUT"))
+        self.assertEqual(len(runner.prompts), 2)
+
+    def test_retry_stays_inside_the_time_budget(self):
+        runner = FakeRunner(outputs=["nope", json.dumps(VALID_ANALYSIS)])
+        self.call(self.start(runner), "/analyze", data=b"\xff\xd8fake")
+        self.assertTrue(all(0 < t <= server.CLAUDE_TIMEOUT_SECONDS for t in runner.timeouts), runner.timeouts)
+
+    def test_no_retry_when_the_budget_is_spent(self):
+        runner = FakeRunner(output="nope")
+        runner.timeout = server.RETRY_MIN_SECONDS - 1
+        status, _ = self.call(self.start(runner), "/analyze", data=b"\xff\xd8fake")
+        self.assertEqual((status, len(runner.prompts)), (502, 1))
+
+    def test_claude_failure_is_not_retried(self):
+        runner = FakeRunner(error=server.ClaudeUnavailableError("logged out"))
+        status, _ = self.call(self.start(runner), "/analyze", data=b"\xff\xd8fake")
+        self.assertEqual((status, len(runner.prompts)), (503, 1))
+
+    def test_recipe_bad_output_is_retried_once(self):
+        runner = FakeRunner(outputs=["{}", json.dumps(VALID_RECIPE)])
+        body = json.dumps({"remaining_g": 30, "stage": "soft", "have": []}).encode()
+        status, _ = self.call(self.start(runner), "/recipe", data=body, content_type="application/json")
+        self.assertEqual((status, len(runner.prompts)), (200, 2))
+
+    def test_selftest_runs_claude_without_tools(self):
+        runner = FakeRunner(output="OK")
+        status, body = self.call(self.start(runner), "/selftest")
+        self.assertEqual((status, body), (200, {"status": "ok"}))
+        self.assertEqual(runner.prompts, [server.SELFTEST_PROMPT])
+        self.assertFalse(runner.read_files)
+        self.assertEqual(runner.timeouts, [server.SELFTEST_TIMEOUT_SECONDS])
+
+    def test_selftest_reports_claude_failure(self):
+        runner = FakeRunner(error=server.ClaudeUnavailableError("not logged in"))
+        status, body = self.call(self.start(runner), "/selftest")
+        self.assertEqual((status, body["error"]["code"]), (503, "CLAUDE_UNAVAILABLE"))
+
+    def test_selftest_maps_timeout(self):
+        runner = FakeRunner(error=subprocess.TimeoutExpired("claude", 60))
+        status, body = self.call(self.start(runner), "/selftest")
+        self.assertEqual((status, body["error"]["code"]), (504, "TIMEOUT"))
+
+    def test_selftest_needs_token(self):
+        runner = FakeRunner(output="OK")
+        status, _ = self.call(self.start(runner), "/selftest", token=None)
+        self.assertEqual((status, runner.prompts), (401, []))
+
     def test_unknown_path_is_404(self):
         status, _ = self.call(self.start(FakeRunner()), "/nope")
         self.assertEqual(status, 404)
@@ -291,6 +355,15 @@ class ClaudeRunnerTest(unittest.TestCase):
         with mock.patch.object(subprocess, "run", return_value=completed):
             with self.assertRaises(server.ModelOutputError):
                 runner.run("prompt", "/tmp/x")
+
+    def test_timeout_defaults_to_the_runner_and_can_be_overridden(self):
+        runner = server.ClaudeRunner("/usr/local/bin/claude", timeout=120)
+        completed = subprocess.CompletedProcess([], 0, stdout=json.dumps({"result": "{}"}), stderr="")
+        with mock.patch.object(subprocess, "run", return_value=completed) as run:
+            runner.run("prompt", "/tmp/x")
+            self.assertEqual(run.call_args.kwargs["timeout"], 120)
+            runner.run("prompt", "/tmp/x", timeout=7)
+            self.assertEqual(run.call_args.kwargs["timeout"], 7)
 
     def test_missing_binary_is_unavailable(self):
         runner = server.ClaudeRunner("")

@@ -55,11 +55,14 @@ struct BridgeHealth: Codable, Equatable {
 
 enum BridgeError: Error, Equatable {
     case unreachable, unauthorized, badModelOutput, claudeUnavailable, timeout
+    /// No address or token saved yet, or the saved address is not a Tailscale address.
+    case notConfigured
     case server(Int)
 
     var messageHe: String {
         switch self {
-        case .unreachable: "המק לא זמין כרגע. הארוחה תזוהה כשיהיה חיבור."
+        case .unreachable: "המק לא זמין כרגע. הארוחה תזוהה כשיהיה חיבור. בדקו שהמק ער ושה-Tailscale פועל במק ובאייפון."
+        case .notConfigured: "זיהוי הארוחות עוד לא הוגדר. הזינו את כתובת המק והטוקן בהגדרות ← \"זיהוי ארוחות דרך המק\"."
         case .unauthorized: "הטוקן שגוי. בדקו אותו בהגדרות."
         case .badModelOutput: "לא הצלחתי להבין את התשובה. אפשר להזין ידנית."
         case .claudeUnavailable: "Claude לא מחובר על המק. פתחו טרמינל במק והריצו claude כדי להתחבר."
@@ -73,6 +76,8 @@ protocol BridgeClienting {
     func analyze(jpeg: Data, cookingNote: String?, context: AnalysisContext?) async throws -> AnalysisResult
     func recipe(_ request: RecipeRequest) async throws -> RecipeSuggestion
     func health() async throws -> BridgeHealth
+    /// Has the Mac actually run Claude once; `health` only checks that it is installed.
+    func selfTest() async throws
 }
 
 struct BridgeClient: BridgeClienting {
@@ -81,6 +86,8 @@ struct BridgeClient: BridgeClienting {
     static let analyzeTimeout: TimeInterval = 150
     static let recipeTimeout: TimeInterval = 150
     static let healthTimeout: TimeInterval = 10
+    /// Above the bridge's SELFTEST_TIMEOUT_SECONDS = 60; a self-test may also wait for a running analysis.
+    static let selfTestTimeout: TimeInterval = 150
 
     let baseURL: URL
     let token: String
@@ -123,6 +130,14 @@ struct BridgeClient: BridgeClienting {
 
     func health() async throws -> BridgeHealth {
         try await send(makeRequest(path: "health", method: "GET", timeout: Self.healthTimeout))
+    }
+
+    func selfTest() async throws {
+        let _: BridgeStatus = try await send(makeRequest(path: "selftest", method: "GET", timeout: Self.selfTestTimeout))
+    }
+
+    private struct BridgeStatus: Decodable {
+        var status: String
     }
 
     private func makeRequest(path: String, method: String, timeout: TimeInterval) -> URLRequest {

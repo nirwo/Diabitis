@@ -43,7 +43,12 @@ final class AnalysisQueue: ObservableObject {
     }
 
     func processPending() async {
-        guard !isRunning, let client = makeClient() else { return }
+        guard !isRunning else { return }
+        guard let client = makeClient() else {
+            // Waiting meals with nowhere to send them: say so instead of silently doing nothing.
+            if !store.foodEntries(withStatus: .pending).isEmpty { lastError = .notConfigured }
+            return
+        }
         isRunning = true
         defer { isRunning = false }
 

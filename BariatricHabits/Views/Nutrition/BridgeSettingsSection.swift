@@ -64,15 +64,32 @@ struct BridgeSettingsSection: View {
         }
         do {
             let health = try await client.health()
-            if health.claude {
-                message = "מחובר. Claude זמין במק."
-                store.requeueUnauthorized()
-                analysisQueue.kick()
-            } else {
-                message = BridgeError.claudeUnavailable.messageHe
+            guard health.claude else {
+                message = "המק מחובר, אבל Claude Code לא נמצא בו. התקינו אותו והריצו שוב את bridge/install.sh."
+                return
             }
+            message = "המק מחובר. בודק ש-Claude עונה…"
+            message = await selfTestMessage(client)
+            // The token is right either way, so meals that failed on a wrong token can go again.
+            store.requeueUnauthorized()
+            analysisQueue.kick()
         } catch {
             message = ((error as? BridgeError) ?? .unreachable).messageHe
+        }
+    }
+
+    /// `health` only proves the bridge is up; this runs Claude once so a logged-out Mac shows here,
+    /// not later as meals that never get identified.
+    private func selfTestMessage(_ client: BridgeClienting) async -> String {
+        do {
+            try await client.selfTest()
+            return "מחובר. Claude עונה במק."
+        } catch BridgeError.server(404) {
+            return "המק מחובר. הגשר במק בגרסה ישנה — עדכנו את הקוד במק והפעילו את הגשר מחדש כדי לבדוק גם את Claude."
+        } catch BridgeError.timeout {
+            return "המק מחובר, אבל Claude לא ענה בזמן. נסו שוב בעוד דקה."
+        } catch {
+            return ((error as? BridgeError) ?? .unreachable).messageHe
         }
     }
 }

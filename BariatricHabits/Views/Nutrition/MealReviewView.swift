@@ -29,6 +29,13 @@ struct MealReviewView: View {
             && CookingNoteDraft.isChanged(cookingDraft, from: live.analyzedCookingNote)
     }
 
+    /// A failed identification can be sent again as is; a missing photo cannot.
+    private var canRetryAnalysis: Bool {
+        let live = liveEntry
+        guard live.photoFileName != nil, case .failed(let failure) = live.status else { return false }
+        return failure != .missingPhoto
+    }
+
     private var canSave: Bool {
         !entry.items.isEmpty && entry.items.allSatisfy { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
     }
@@ -43,7 +50,14 @@ struct MealReviewView: View {
                             .accessibilityLabel("תמונת הארוחה")
                     }
                 }
-                if let statusText { Section { Text(statusText).foregroundStyle(.secondary) } }
+                if let statusText {
+                    Section {
+                        Text(statusText).foregroundStyle(.secondary)
+                        if canRetryAnalysis {
+                            Button { reanalyze() } label: { Label("נסה לזהות שוב", systemImage: "arrow.clockwise") }
+                        }
+                    }
+                }
                 // Live, so tips that arrive while this screen is open still show.
                 if let advice = liveEntry.advice, !advice.isEmpty {
                     Section { AdviceView(advice: advice) }
@@ -114,9 +128,17 @@ struct MealReviewView: View {
         }
     }
 
+    /// Says why a waiting meal is not being identified, when the last attempt failed.
+    private var waitingText: String {
+        if liveEntry.status == .pending, !analysisQueue.isRunning, let error = analysisQueue.lastError {
+            return "\(error.messageHe) אפשר גם להזין ידנית."
+        }
+        return "ממתין לזיהוי במק. אפשר גם להזין ידנית."
+    }
+
     private var statusText: String? {
         switch entry.status {
-        case .pending, .analyzing: "ממתין לזיהוי במק. אפשר גם להזין ידנית."
+        case .pending, .analyzing: waitingText
         case .needsReview: "זה מה שזיהיתי — בדקו ותקנו לפני שמירה."
         case .failed(.unauthorized): BridgeError.unauthorized.messageHe
         case .failed(.unreadable): BridgeError.badModelOutput.messageHe
